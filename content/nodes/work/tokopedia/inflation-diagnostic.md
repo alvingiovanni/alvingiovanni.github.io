@@ -5,31 +5,31 @@ tag: Tokopedia (Bytedance) · 2021–2024
 metric: ~30%
 metric-label: Revenue uplift in targeted verticals
 ---
-
 ## Problem
 
-During a period of rising national inflation, lending disbursement growth slowed sharply. The
-business needed to know whether this was a broad demand slump or something more targeted — and
-if targeted, where the remaining growth opportunity actually was.
+During a period of rising national inflation, lending disbursement growth slowed and missed
+target. The working theory was that inflation was the cause. It wasn't clear whether the
+slowdown was even across the seller base or concentrated in specific product categories, and if
+concentrated, which segments still had room to grow.
 
-## Approach
+## Solution
 
-Ran a diagnostic analysis comparing platform-level price inflation against national inflation,
-broken down by product category, then applied linear trend estimation to project which seller
-segments would keep growing despite the macro headwind — surfacing underserved categories with
-resilient demand.
+Calculated platform-level price inflation the same way the national index is calculated, then
+compared it against national inflation by product category. Broke down seller transaction volume
+by category to find where demand was holding up despite the price and macro pressure, and
+projected which of those categories would keep growing based on their recent trend, sizing the
+lending opportunity in the underserved ones.
 
 ## Impact
 
-Contributed to ~30% revenue uplift in the targeted verticals identified by the analysis, by
-redirecting growth and lending focus toward segments proven resilient rather than spreading
-effort evenly across a shrinking market.
+- ~30% revenue uplift in the targeted verticals identified by the analysis
+- Lending and growth focus shifted toward the seller segments the analysis found resilient to the inflation headwind
 
 ```chart
 type: column
-title: Targeted-Vertical Revenue Uplift
+title: ~30% Targeted-Vertical Revenue Uplift Signaling Resilient Demand
 y-label: Targeted-vertical revenue
-note: Illustrative — shown relative to a baseline of 1×, reflecting the ~30% revenue uplift reported above. Not actual figures.
+note: Illustrative — shown relative to a baseline of 1×, reflecting the ~30% revenue uplift reported above.
 Before: 1×
-After: ≈1.30×
+After: 1.30×
 ```

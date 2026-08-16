@@ -10,22 +10,30 @@ metric-label: What that number is
 
 Write here. Plain sentences — no code, no HTML needed.
 
-## Approach
+## Solution
 
-You can use **bold**, *italic*, [links](https://example.com), and bullet lists:
+Describe what you did as a process, not a technical implementation: what was compared, grouped,
+or scored, and on what basis. Skip the name of the specific algorithm or tool ("grouped users by
+shopping behavior," not "ran a K-Means clustering model"). You can use **bold**, *italic*,
+[links](https://example.com), and bullet lists:
 
 - first point
 - second point
 
 ## Impact
 
-A chart you type by hand:
+Lead with the results as a bullet list, one line per number:
+
+- First measurable result
+- Second measurable result
+
+Then a chart you type by hand:
 
 ```chart
 type: column
-title: Metric Comparison
+title: +26% Metric Name Signaling Adjective Improvement
 y-label: Metric name
-note: Illustrative — shown relative to a baseline of 1×. Not actual figures.
+note: Illustrative — shown relative to a baseline of 1×, reflecting the +26% reported above.
 Before: 1×
 After: 1.26×
 ```

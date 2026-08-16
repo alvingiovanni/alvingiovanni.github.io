@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=20260816-chart-title" />
+  <link rel="stylesheet" href="css/style.css?v=20260816-index-subtitle" />
 </head>
 <body>
 
@@ -92,10 +92,14 @@
   <div class="text-view" id="text-view" data-open="false" role="dialog" aria-modal="true" aria-labelledby="text-view-title" hidden>
     <div class="text-view-inner">
       <button class="modal-close" id="text-view-close" type="button" aria-label="Close text view">×</button>
-      <p class="eyebrow">Portfolio index</p>
-      <h1 id="text-view-title">Alvin Giovanni</h1>
-      <p class="text-view-lede">The complete portfolio, arranged for linear reading.</p>
-      <div id="text-view-body"></div>
+      <nav class="index-sidebar index-navigation" id="index-sidebar" aria-label="Portfolio index table of contents"></nav>
+      <main class="text-view-content">
+        <p class="eyebrow">Portfolio index</p>
+        <h1 id="text-view-title">Alvin Giovanni</h1>
+        <p class="text-view-subtitle" id="text-view-subtitle"></p>
+        <nav class="index-mobile-nav index-navigation" id="index-mobile-nav" aria-label="Portfolio index sections"></nav>
+        <div id="text-view-body"></div>
+      </main>
     </div>
   </div>
 
@@ -114,8 +118,8 @@
     </div>
   </noscript>
 
-  <script src="js/markdown.js?v=20260816-chart-title"></script>
-  <script src="js/graph.js?v=20260816-chart-title"></script>
-  <script src="js/app.js?v=20260816-chart-title"></script>
+  <script src="js/markdown.js?v=20260816-index-subtitle"></script>
+  <script src="js/graph.js?v=20260816-index-subtitle"></script>
+  <script src="js/app.js?v=20260816-index-subtitle"></script>
 </body>
 </html>

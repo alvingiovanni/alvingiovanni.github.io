@@ -35,6 +35,9 @@
   var lastFocused = null;
   var textViewLastFocused = null;
   var searchActiveIndex = -1;
+  var indexNavFrame = null;
+  var indexParentById = Object.create(null);
+  var indexTopBranchById = Object.create(null);
 
   /* ---------------- boot ---------------- */
 
@@ -52,6 +55,9 @@
     el.warnings = document.getElementById("warnings");
     el.textView = document.getElementById("text-view");
     el.textBody = document.getElementById("text-view-body");
+    el.textSubtitle = document.getElementById("text-view-subtitle");
+    el.indexSidebar = document.getElementById("index-sidebar");
+    el.indexMobileNav = document.getElementById("index-mobile-nav");
     el.hint = document.getElementById("hint");
     el.loading = document.getElementById("loading");
 
@@ -347,10 +353,24 @@
 
   /* ---------------- modal ---------------- */
 
+  function resetModalScroll() {
+    // A trackpad flick can still be decelerating (native momentum scroll)
+    // when the next node is selected; setting scrollTop alone doesn't stop
+    // it, so the in-flight momentum immediately scrolls the fresh content
+    // back down. Briefly killing overflow stops the momentum outright.
+    el.modalBody.scrollTop = 0;
+    el.modalBody.style.overflow = "hidden";
+    requestAnimationFrame(function () {
+      el.modalBody.style.overflow = "";
+      el.modalBody.scrollTop = 0;
+    });
+  }
+
   function openNode(id) {
     var node = byId[id];
     if (!node) return;
     currentOpen = id;
+    resetModalScroll();
     graph.select(id);
 
     // Start moving the node toward the middle, but do not make the dialog wait
@@ -404,7 +424,7 @@
     }
 
     el.modalBody.innerHTML = html;
-    el.modalBody.scrollTop = 0;
+    resetModalScroll();
     el.backdrop.setAttribute("data-open", "true");
     el.backdrop.removeAttribute("hidden");
     document.body.classList.add("modal-open");
@@ -483,6 +503,12 @@
     document.getElementById("text-view-close").addEventListener("click", function () {
       toggleTextView(false);
     });
+    el.textView.addEventListener("click", function (e) {
+      var button = e.target.closest(".index-navigation button[data-target]");
+      if (!button) return;
+      scrollToIndexSection(button.dataset.target);
+    });
+    el.textView.addEventListener("scroll", scheduleIndexNavUpdate, { passive: true });
 
     el.searchToggle.addEventListener("click", function () {
       var isOpen = el.searchWrap.getAttribute("data-expanded") === "true";
@@ -554,9 +580,12 @@
   }
 
   function trapFocus(e, container) {
-    var focusables = container.querySelectorAll(
+    var candidates = container.querySelectorAll(
       'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
     );
+    var focusables = Array.prototype.filter.call(candidates, function (candidate) {
+      return candidate.getClientRects().length > 0 && window.getComputedStyle(candidate).visibility !== "hidden";
+    });
     if (!focusables.length) return;
     var first = focusables[0];
     var last = focusables[focusables.length - 1];
@@ -668,38 +697,223 @@
   }
 
   function buildTextView() {
-    var order = [];
     var root = nodes.filter(function (n) {
       return !n.parent;
     })[0];
-    (function walk(node) {
-      if (!node) return;
-      order.push(node);
-      nodes
-        .filter(function (n) {
-          return n.parent === node.id;
-        })
-        .forEach(walk);
-    })(root);
+    el.textSubtitle.textContent = root.tag || "";
+    el.textSubtitle.hidden = !root.tag;
+    var children = Object.create(null);
+    nodes.forEach(function (n) {
+      if (!n.parent) return;
+      (children[n.parent] = children[n.parent] || []).push(n);
+    });
 
-    el.textBody.innerHTML = order
-      .filter(function (n) {
-        return n.hasBody;
-      })
-      .map(function (n) {
-        return (
-          '<section class="text-section" id="text-' + escapeHtml(n.id) + '">' +
-          (n.tag ? '<p class="modal-tag">' + escapeHtml(n.tag) + "</p>" : "") +
-          "<h2>" + escapeHtml(n.title) + "</h2>" +
-          (n.metric
-            ? '<p class="text-metric"><strong>' + escapeHtml(n.metric) + "</strong> " +
-              escapeHtml(n.metricLabel) + "</p>"
-            : "") +
-          '<div class="prose">' + window.Markdown.render(n.body) + "</div>" +
-          "</section>"
-        );
-      })
-      .join("");
+    function readableChildren(node) {
+      var result = [];
+      (children[node.id] || []).forEach(function (child) {
+        if (child.hasBody) result.push(child);
+        else result = result.concat(readableChildren(child));
+      });
+      return result;
+    }
+
+    function makeItem(node, depth, parentId, branchId, ancestors) {
+      var item = {
+        node: node,
+        depth: depth,
+        branchId: branchId,
+        ancestors: ancestors,
+        children: [],
+      };
+      indexParentById[node.id] = parentId;
+      indexTopBranchById[node.id] = branchId;
+      item.children = readableChildren(node).map(function (child) {
+        return makeItem(child, depth + 1, node.id, branchId, ancestors.concat(node));
+      });
+      return item;
+    }
+
+    indexParentById = Object.create(null);
+    indexTopBranchById = Object.create(null);
+    var rootItem = makeItem(root, 1, null, root.id, []);
+    rootItem.children = [];
+    var topItems = readableChildren(root).map(function (child) {
+      return makeItem(child, 1, null, child.id, []);
+    });
+    var indexItems = [rootItem].concat(topItems);
+
+    el.indexSidebar.innerHTML =
+      '<p class="index-sidebar-title">Contents</p>' + renderIndexTree(indexItems);
+    el.indexMobileNav.innerHTML =
+      '<span class="index-mobile-label">Jump to</span><div class="index-mobile-scroll">' +
+      indexItems
+        .map(function (item, index) {
+          return renderIndexButton(item, index === 0, "mobile");
+        })
+        .join("") +
+      "</div>";
+    el.textBody.innerHTML = indexItems.map(renderTextSection).join("");
+  }
+
+  function indexItemLabel(item) {
+    return item.node.id === ROOT_ID ? "Overview" : item.node.title;
+  }
+
+  function renderIndexTree(items) {
+    return (
+      '<ol class="index-nav-tree">' +
+      items
+        .map(function (item, index) {
+          return (
+            '<li data-depth="' + item.depth + '" style="--nav-color:' +
+            (item.node.color || "#1d1d1f") + '">' +
+            renderIndexButton(item, index === 0 && item.node.id === ROOT_ID, "tree") +
+            (item.children.length ? renderIndexTree(item.children) : "") +
+            "</li>"
+          );
+        })
+        .join("") +
+      "</ol>"
+    );
+  }
+
+  function renderIndexButton(item, active, mode) {
+    return (
+      '<button type="button" data-target="' + escapeHtml(item.node.id) + '" ' +
+      'data-branch="' + escapeHtml(item.branchId) + '" data-nav-mode="' + mode + '" ' +
+      'style="--nav-color:' + (item.node.color || "#1d1d1f") + '"' +
+      (active ? ' aria-current="location"' : "") + '>' +
+      '<span class="index-nav-dot"></span><span>' + escapeHtml(indexItemLabel(item)) + "</span></button>"
+    );
+  }
+
+  function renderTextSection(item) {
+    var n = item.node;
+    var headingLevel = Math.min(6, item.depth + 1);
+    var path = item.ancestors.length
+      ? '<p class="text-section-path">' +
+        item.ancestors
+          .map(function (ancestor) {
+            return "<span>" + escapeHtml(ancestor.title) + "</span>";
+          })
+          .join('<span aria-hidden="true">/</span>') +
+        "</p>"
+      : "";
+    return (
+      '<section class="text-section" id="text-' + escapeHtml(n.id) + '" data-index-node="' +
+      escapeHtml(n.id) + '" data-index-branch="' + escapeHtml(item.branchId) + '" data-depth="' +
+      item.depth + '" style="--section-color:' + (n.color || "#1d1d1f") + '">' +
+      path +
+      (n.tag && n.id !== ROOT_ID ? '<p class="modal-tag">' + escapeHtml(n.tag) + "</p>" : "") +
+      "<h" + headingLevel + ">" + escapeHtml(indexItemLabel(item)) + "</h" + headingLevel + ">" +
+      (n.metric
+        ? '<p class="text-metric"><strong>' + escapeHtml(n.metric) + "</strong> " +
+          escapeHtml(n.metricLabel) + "</p>"
+        : "") +
+      '<div class="prose">' + renderIndexBody(n.body, item.depth) + "</div>" +
+      (item.children.length
+        ? '<div class="text-section-children">' + item.children.map(renderTextSection).join("") + "</div>"
+        : "") +
+      "</section>"
+    );
+  }
+
+  function renderIndexBody(body, depth) {
+    return window.Markdown.render(body).replace(/<(\/?)h([2-6])(\b[^>]*)>/g, function (_, slash, level, rest) {
+      var shifted = Math.min(6, Math.max(Number(level) + depth - 1, depth + 2));
+      return "<" + slash + "h" + shifted + rest + ">";
+    });
+  }
+
+  function scrollToIndexSection(id) {
+    var target = document.getElementById("text-" + id);
+    if (!target) return;
+    var offset = indexScrollOffset();
+    var top = el.textView.scrollTop + target.getBoundingClientRect().top - offset;
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.textView.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? "auto" : "smooth" });
+    setActiveIndexNav(id);
+  }
+
+  function scheduleIndexNavUpdate() {
+    if (indexNavFrame !== null) return;
+    indexNavFrame = window.requestAnimationFrame(function () {
+      indexNavFrame = null;
+      updateActiveIndexNav();
+    });
+  }
+
+  function updateActiveIndexNav() {
+    var sections = el.textBody.querySelectorAll(".text-section[data-index-node]");
+    if (!sections.length) return;
+    var marker = indexScrollOffset() + 8;
+    var active = sections[0].dataset.indexNode;
+    Array.prototype.forEach.call(sections, function (section) {
+      if (section.getBoundingClientRect().top <= marker) {
+        active = section.dataset.indexNode;
+      }
+    });
+    if (el.textView.scrollTop + el.textView.clientHeight >= el.textView.scrollHeight - 2) {
+      active = sections[sections.length - 1].dataset.indexNode;
+    }
+    setActiveIndexNav(active);
+  }
+
+  function indexScrollOffset() {
+    if (window.getComputedStyle(el.indexMobileNav).display !== "none") {
+      var stickyTop = parseFloat(window.getComputedStyle(el.indexMobileNav).top) || 0;
+      return stickyTop + el.indexMobileNav.offsetHeight + 24;
+    }
+    return 40;
+  }
+
+  function setActiveIndexNav(id) {
+    Array.prototype.forEach.call(el.indexSidebar.querySelectorAll("button[data-target]"), function (button) {
+      var active = button.dataset.target === id;
+      var wasActive = button.hasAttribute("aria-current");
+      var ancestor = isIndexAncestor(button.dataset.target, id);
+      if (active) button.setAttribute("aria-current", "location");
+      else button.removeAttribute("aria-current");
+      button.parentElement.setAttribute("data-active-ancestor", ancestor ? "true" : "false");
+      if (active && !wasActive) revealIndexNavButton(button);
+    });
+    var activeBranch = indexTopBranchById[id] || ROOT_ID;
+    Array.prototype.forEach.call(el.indexMobileNav.querySelectorAll("button[data-target]"), function (button) {
+      var active = button.dataset.target === activeBranch;
+      var wasActive = button.hasAttribute("aria-current");
+      if (active) button.setAttribute("aria-current", "location");
+      else button.removeAttribute("aria-current");
+      if (active && !wasActive) revealIndexNavButton(button);
+    });
+  }
+
+  function isIndexAncestor(candidate, id) {
+    var parent = indexParentById[id];
+    while (parent) {
+      if (parent === candidate) return true;
+      parent = indexParentById[parent];
+    }
+    return false;
+  }
+
+  function revealIndexNavButton(button) {
+    var scroller = button.closest(".index-mobile-scroll") || el.indexSidebar;
+    var buttonRect = button.getBoundingClientRect();
+    var scrollerRect = scroller.getBoundingClientRect();
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (scroller === el.indexSidebar) {
+      var top = scroller.scrollTop;
+      if (buttonRect.top < scrollerRect.top + 42) top += buttonRect.top - scrollerRect.top - 42;
+      else if (buttonRect.bottom > scrollerRect.bottom - 10) top += buttonRect.bottom - scrollerRect.bottom + 10;
+      else return;
+      scroller.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
+      return;
+    }
+    var left = scroller.scrollLeft;
+    if (buttonRect.left < scrollerRect.left) left += buttonRect.left - scrollerRect.left - 3;
+    else if (buttonRect.right > scrollerRect.right) left += buttonRect.right - scrollerRect.right + 3;
+    else return;
+    scroller.scrollTo({ left: left, behavior: reduceMotion ? "auto" : "smooth" });
   }
 
   function toggleTextView(open) {
@@ -710,6 +924,7 @@
       el.textView.removeAttribute("hidden");
       document.body.classList.add("modal-open");
       el.textView.scrollTop = 0;
+      setActiveIndexNav("home");
       document.getElementById("text-view-close").focus();
     } else {
       el.textView.setAttribute("hidden", "");

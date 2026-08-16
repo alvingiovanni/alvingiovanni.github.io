@@ -15,4 +15,4 @@ Beyond analysis itself, I enjoy building systems and capabilities that transform
 - [LinkedIn](https://www.linkedin.com/in/alvingiovanni/)
 - [alvingiovanni@outlook.com](mailto:alvingiovanni@outlook.com)
 
-Jakarta, Indonesia · Open to remote & relocation
+Jakarta, Indonesia

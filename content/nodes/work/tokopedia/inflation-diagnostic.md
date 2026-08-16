@@ -26,8 +26,10 @@ redirecting growth and lending focus toward segments proven resilient rather tha
 effort evenly across a shrinking market.
 
 ```chart
-type: bar
-note: Illustrative — indexed to a baseline of 100, reflecting the ~30% revenue uplift reported above. Not actual figures.
-Before: 100
-After: 130
+type: column
+title: Targeted-Vertical Revenue Uplift
+y-label: Targeted-vertical revenue
+note: Illustrative — shown relative to a baseline of 1×, reflecting the ~30% revenue uplift reported above. Not actual figures.
+Before: 1×
+After: ≈1.30×
 ```

@@ -1,11 +1,10 @@
 ---
 title: Segmentation & Propensity Scoring
-order: 1
+order: 4
 tag: Tokopedia (Bytedance) · 2021–2024
 metric: +26%
 metric-label: Engagement uplift
 ---
-
 ## Problem
 
 Marketing was sending the same message to everyone on the list, regardless of whether a user
@@ -29,8 +28,10 @@ in core product activity — by replacing one-size-fits-all messaging with perso
 propensity-driven targeting.
 
 ```chart
-type: bar
-note: Illustrative — indexed to a baseline of 100, reflecting the +26% engagement uplift reported above. Not actual figures.
-Before: 100
-After: 126
+type: column
+title: Marketing Engagement Uplift
+y-label: Marketing engagement
+note: Illustrative — shown relative to a baseline of 1×, reflecting the +26% engagement uplift reported above. Not actual figures.
+Before: 1×
+After: 1.26×
 ```

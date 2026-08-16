@@ -33,14 +33,20 @@ window.Graph = (function () {
     return clamp((vh / vw) * 0.9, 0.85, 1.7);    // portrait: grow downward
   }
 
-  // Canvas 2D can't read CSS custom properties, so the font stack is spelled out.
-  var FONT = '"Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+  // Canvas 2D can't read CSS custom properties, so the system stack is spelled out.
+  var FONT = '"Space Grotesk", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif';
 
   // Absolute safety floor used only inside computeFit()'s own iterative
   // solve. The zoom-out limit users actually hit is the dynamic `minZoom`
   // below, which tracks "the whole map is visible" for the current tree.
   var FIT_ITER_FLOOR = 0.05;
   var ZOOM_MAX = 3;
+  var RADIAL_RING_STEP = 240;
+  var MOTION_PAUSE_AFTER_ZOOM = 180;
+
+  // Fly-to target zoom, relative to home/reset-view zoom — slightly more
+  // zoomed out so a clicked node's siblings stay on screen.
+  var FLYTO_ZOOM_FACTOR = 0.8;
 
   function ringAt(d) {
     return d < RING.length ? RING[d] : RING[RING.length - 1] + (d - RING.length + 1) * 220;
@@ -127,24 +133,22 @@ window.Graph = (function () {
     return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
   }
 
-  // Draws a small magnifying-glass glyph at the centre of a clickable node,
-  // in place of the plain dot. `r` is the node's on-screen radius.
-  function drawNodeIcon(ctx, x, y, r, color) {
-    var lensR = r * 0.32;
-    var lensCx = x - r * 0.1;
-    var lensCy = y - r * 0.1;
+  // Draws a plus that rotates into an × when its node is selected.
+  function drawNodeIcon(ctx, x, y, r, color, turn) {
+    var reach = r * 0.3;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(turn || 0);
     ctx.strokeStyle = color;
-    ctx.lineWidth = Math.max(1.3, r * 0.15);
+    ctx.lineWidth = Math.max(1.25, r * 0.12);
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.arc(lensCx, lensCy, lensR, 0, TAU);
+    ctx.moveTo(-reach, 0);
+    ctx.lineTo(reach, 0);
+    ctx.moveTo(0, -reach);
+    ctx.lineTo(0, reach);
     ctx.stroke();
-    var hx = lensCx + lensR * Math.cos(Math.PI / 4);
-    var hy = lensCy + lensR * Math.sin(Math.PI / 4);
-    ctx.beginPath();
-    ctx.moveTo(hx, hy);
-    ctx.lineTo(x + r * 0.42, y + r * 0.42);
-    ctx.stroke();
+    ctx.restore();
   }
 
   function easeInOutCubic(t) {
@@ -176,10 +180,14 @@ window.Graph = (function () {
       dpr = 1;
 
     var hovered = null;
+    var hoverChangedAt = 0;
     var selected = null;
+    var closingSelection = null;
+    var selectionChangedAt = 0;
     var focusRing = null; // keyboard focus, drawn differently from mouse hover
     var flight = null;
-    var t0 = performance.now();
+    var motionStartedAt = performance.now();
+    var motionPauseUntil = 0;
 
     /* ----- build ----- */
 
@@ -205,6 +213,8 @@ window.Graph = (function () {
           by: 0,
           radiusFromCenter: 0,
           phase: 0,
+          motionPausedAt: null,
+          motionPausedFor: 0,
         };
         byId[node.id] = node;
         all.push(node);
@@ -226,7 +236,7 @@ window.Graph = (function () {
       (function walk(node, depth) {
         node.depth = depth;
         if (!node.color && node.parent) node.color = node.parent.color;
-        if (!node.color) node.color = "#17171a";
+        if (!node.color) node.color = "#1d1d1f";
         var h = 0;
         for (var i = 0; i < node.id.length; i++) h = (h * 31 + node.id.charCodeAt(i)) % 1000;
         node.phase = (h / 1000) * TAU;
@@ -242,7 +252,7 @@ window.Graph = (function () {
           node.parent = root;
           root.children.push(node);
           node.depth = 1;
-          if (!node.color) node.color = "#17171a";
+          if (!node.color) node.color = "#1d1d1f";
         }
       });
 
@@ -322,8 +332,8 @@ window.Graph = (function () {
       // Leave room for the top bar and the zoom controls so the map isn't
       // tucked underneath them.
       var sidePad = vw < 700 ? 14 : 44;
-      var topPad = 76;
-      var bottomPad = 68;
+      var topPad = vw < 700 ? 70 : 88;
+      var bottomPad = vw < 700 ? 76 : 92;
       var availW = Math.max(120, vw - sidePad * 2);
       var availH = Math.max(120, vh - topPad - bottomPad);
 
@@ -372,8 +382,8 @@ window.Graph = (function () {
       if (!all.length) return;
 
       var sidePad = vw < 700 ? 14 : 44;
-      var topPad = 76;
-      var bottomPad = 68;
+      var topPad = vw < 700 ? 70 : 88;
+      var bottomPad = vw < 700 ? 76 : 92;
       var availW = Math.max(120, vw - sidePad * 2);
       var availH = Math.max(120, vh - topPad - bottomPad);
       var labelWeight = vw < 700 ? 0.5 : 1;
@@ -430,39 +440,95 @@ window.Graph = (function () {
 
     /* ----- live positions (layout + float) ----- */
 
-    function livePos(node, time) {
+    function addMotionBranch(set, node) {
+      if (!node) return;
+      set.add(node);
+      if (node.parent) set.add(node.parent);
+      node.children.forEach(function (child) {
+        set.add(child);
+      });
+    }
+
+    function pausedMotionNodes() {
+      var paused = new Set();
+      addMotionBranch(paused, hovered);
+      addMotionBranch(paused, selected);
+      addMotionBranch(paused, focusRing);
+      return paused;
+    }
+
+    function updateMotionPauses(now, pauseAll, pausedNodes) {
+      if (reduceMotion) return;
+
+      all.forEach(function (node) {
+        if (node.depth === 0) return;
+        var shouldPause = pauseAll || pausedNodes.has(node);
+
+        if (shouldPause && node.motionPausedAt === null) {
+          node.motionPausedAt = now;
+        } else if (!shouldPause && node.motionPausedAt !== null) {
+          node.motionPausedFor += now - node.motionPausedAt;
+          node.motionPausedAt = null;
+        }
+      });
+    }
+
+    function livePos(node, now) {
       if (reduceMotion || node.depth === 0) return { x: node.bx, y: node.by };
-      var amp = node.depth === 1 ? 5 : 8;
-      var speed = node.depth === 1 ? 0.32 : 0.45;
+
+      var motionNow = node.motionPausedAt === null ? now : node.motionPausedAt;
+      var time = (motionNow - motionStartedAt - node.motionPausedFor) / 1000;
+      var amplitude = node.depth === 1 ? 8 : node.depth === 2 ? 11 : 14;
+      var speed = node.depth === 1 ? 0.28 : node.depth === 2 ? 0.36 : 0.44;
+
       return {
-        x: node.bx + Math.sin(time * speed + node.phase) * amp,
-        y: node.by + Math.cos(time * speed * 0.8 + node.phase) * amp,
+        x: node.bx + Math.sin(time * speed + node.phase) * amplitude,
+        y: node.by + Math.cos(time * speed * 0.78 + node.phase * 1.37) * amplitude,
       };
     }
 
     /* ----- drawing ----- */
 
-    function drawGrid() {
-      var step = 26 * cam.zoom;
-      if (step < 9) return;
-      var originX = vw / 2 - cam.x * cam.zoom;
-      var originY = vh / 2 - cam.y * cam.zoom;
-      var startX = originX - Math.ceil(originX / step) * step;
-      var startY = originY - Math.ceil(originY / step) * step;
-      ctx.fillStyle = "rgba(120,120,132,0.28)";
-      var rad = cam.zoom > 1.4 ? 1.4 : 1;
-      for (var x = startX; x < vw + step; x += step) {
-        for (var y = startY; y < vh + step; y += step) {
-          ctx.beginPath();
-          ctx.arc(x, y, rad, 0, TAU);
-          ctx.fill();
-        }
+    function drawRadialRings() {
+      if (!root) return;
+
+      var center = toScreen(root.bx, root.by);
+      var maxDistance = Math.max(
+        Math.hypot(center.x, center.y),
+        Math.hypot(vw - center.x, center.y),
+        Math.hypot(center.x, vh - center.y),
+        Math.hypot(vw - center.x, vh - center.y)
+      );
+      var ringStep = RADIAL_RING_STEP * cam.zoom;
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(96,96,104,0.13)";
+      ctx.lineWidth = 1;
+
+      for (var radius = ringStep; radius <= maxDistance + ringStep; radius += ringStep) {
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, radius, 0, TAU);
+        ctx.stroke();
       }
+
+      ctx.restore();
     }
 
     function labelScale() {
       // Partially compensate for zoom so labels never shrink into noise.
       return clamp(cam.zoom, 0.72, 1.12);
+    }
+
+    function iconTurnFor(node, now) {
+      if (reduceMotion) return node === selected ? Math.PI * 0.75 : 0;
+      var progress = clamp((now - selectionChangedAt) / 360, 0, 1);
+      var eased = easeInOutCubic(progress);
+      if (node === selected) return eased * Math.PI * 0.75;
+      if (node === closingSelection) {
+        if (progress >= 1) closingSelection = null;
+        return (1 - eased) * Math.PI * 0.75;
+      }
+      return 0;
     }
 
     function wrapLines(text, maxWidth) {
@@ -482,14 +548,79 @@ window.Graph = (function () {
       return lines.slice(0, 3);
     }
 
+    // Build the nucleus label from its actual on-screen radius. Font sizes
+    // stop growing at high zoom, so using raw zoom as the wrap width lets text
+    // escape the circle at intermediate scales. This keeps width and height
+    // tied to the visible circle and compacts the whole block when necessary.
+    function nucleusLayout(node, radius, showSubtitle, showIcon) {
+      var maxTextWidth = Math.max(82, radius * 1.56);
+      var maxBlockHeight = radius * 1.7;
+      var titleBase = clamp(radius * 0.24, 18, 31);
+      var subtitleBase = clamp(radius * 0.112, 10.5, 17);
+
+      function build(scale) {
+        var titleSize = titleBase * scale;
+        var subtitleSize = subtitleBase * scale;
+        var titleFont = "650 " + titleSize + "px " + FONT;
+        var subtitleFont = "500 " + subtitleSize + "px " + FONT;
+
+        ctx.font = titleFont;
+        var titleLines = wrapLines(node.title, maxTextWidth);
+        var subtitleLines = [];
+        if (showSubtitle) {
+          ctx.font = subtitleFont;
+          var subtitleWidth = ctx.measureText(node.tag).width;
+          if (subtitleWidth > maxTextWidth) {
+            subtitleSize *= maxTextWidth / subtitleWidth;
+            subtitleFont = "500 " + subtitleSize + "px " + FONT;
+          }
+          subtitleLines = [node.tag];
+        }
+
+        var titleLH = titleSize * 1.18;
+        var subtitleLH = subtitleSize * 1.34;
+        var iconR = clamp(radius * 0.25, 16, 33) * scale;
+        var iconH = showIcon ? iconR * 0.78 : 0;
+        var gap1 = subtitleLines.length ? clamp(radius * 0.12, 8, 18) * scale : 0;
+        var gap2 = showIcon ? clamp(radius * 0.09, 6, 14) * scale : 0;
+        var titleH = titleLines.length * titleLH;
+        var subtitleH = subtitleLines.length * subtitleLH;
+
+        return {
+          titleFont: titleFont,
+          subtitleFont: subtitleFont,
+          titleLines: titleLines,
+          subtitleLines: subtitleLines,
+          titleLH: titleLH,
+          subtitleLH: subtitleLH,
+          iconR: iconR,
+          iconH: iconH,
+          gap1: gap1,
+          gap2: gap2,
+          titleH: titleH,
+          subtitleH: subtitleH,
+          totalH: titleH + gap1 + subtitleH + gap2 + iconH,
+        };
+      }
+
+      var layout = build(1);
+      if (layout.totalH > maxBlockHeight) {
+        layout = build(clamp(maxBlockHeight / layout.totalH, 0.76, 1));
+      }
+      return layout;
+    }
+
     function draw(now) {
-      var time = (now - t0) / 1000;
       ctx.clearRect(0, 0, vw, vh);
-      drawGrid();
+      drawRadialRings();
+
+      var pauseAll = dragging || now < motionPauseUntil;
+      var pausedNodes = pausedMotionNodes();
+      updateMotionPauses(now, pauseAll, pausedNodes);
 
       var pos = new Map();
       all.forEach(function (n) {
-        var p = livePos(n, time);
+        var p = livePos(n, now);
         pos.set(n, toScreen(p.x, p.y));
         n._screen = pos.get(n);
       });
@@ -511,11 +642,11 @@ window.Graph = (function () {
         var b = pos.get(n);
         var lit = activeSet && activeSet.has(n) && activeSet.has(n.parent);
         ctx.strokeStyle = lit
-          ? hexToRgba(n.color, 0.75)
+          ? hexToRgba(n.color, 0.72)
           : activeSet
-          ? hexToRgba(n.color, 0.14)
-          : hexToRgba(n.color, 0.32);
-        ctx.lineWidth = (lit ? 2 : 1.1) * clamp(cam.zoom, 0.7, 1.4);
+          ? hexToRgba(n.color, 0.09)
+          : hexToRgba(n.color, 0.24);
+        ctx.lineWidth = (lit ? 1.8 : 1) * clamp(cam.zoom, 0.7, 1.4);
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
@@ -530,13 +661,21 @@ window.Graph = (function () {
         var isActive = n === hovered || n === selected || n === focusRing;
         var dim = activeSet && !activeSet.has(n);
 
-        ctx.globalAlpha = dim ? 0.42 : 1;
+        ctx.globalAlpha = dim ? 0.34 : 1;
 
         // Selection / hover halo.
         if (isActive) {
+          var isHovered = n === hovered;
+          var hoverPulse =
+            isHovered && !reduceMotion
+              ? Math.sin(((now - hoverChangedAt) / 1400) * TAU)
+              : 0;
+          var haloScale = clamp(cam.zoom, 0.7, 1.3);
+          var haloSpread = isHovered ? 12 + hoverPulse * 2 : 9;
+          var haloAlpha = isHovered ? 0.145 + hoverPulse * 0.025 : 0.12;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, r + 9 * clamp(cam.zoom, 0.7, 1.3), 0, TAU);
-          ctx.fillStyle = hexToRgba(n.color, 0.16);
+          ctx.arc(p.x, p.y, r + haloSpread * haloScale, 0, TAU);
+          ctx.fillStyle = hexToRgba(n.color, haloAlpha);
           ctx.fill();
         }
 
@@ -548,28 +687,28 @@ window.Graph = (function () {
         if (n.depth <= 1) {
           if (n.hasBody) {
             ctx.save();
-            ctx.shadowColor = "rgba(23,23,26,0.16)";
-            ctx.shadowBlur = 10 * clamp(cam.zoom, 0.6, 1.3);
-            ctx.shadowOffsetY = 3 * clamp(cam.zoom, 0.6, 1.3);
+            ctx.shadowColor = "rgba(23,23,26,0.11)";
+            ctx.shadowBlur = 16 * clamp(cam.zoom, 0.6, 1.3);
+            ctx.shadowOffsetY = 4 * clamp(cam.zoom, 0.6, 1.3);
           }
           ctx.fillStyle = "#ffffff";
           ctx.fill();
           if (n.hasBody) ctx.restore();
-          ctx.lineWidth = (n.depth === 0 ? 2.6 : 2) * clamp(cam.zoom, 0.6, 1.5);
-          ctx.strokeStyle = n.depth === 0 ? "#17171a" : n.color;
+          ctx.lineWidth = (n.depth === 0 ? 2.2 : 1.8) * clamp(cam.zoom, 0.6, 1.5);
+          ctx.strokeStyle = n.color;
           ctx.stroke();
         } else if (n.hasBody) {
           ctx.save();
-          ctx.shadowColor = "rgba(23,23,26,0.16)";
-          ctx.shadowBlur = 10 * clamp(cam.zoom, 0.6, 1.3);
+          ctx.shadowColor = "rgba(23,23,26,0.1)";
+          ctx.shadowBlur = 14 * clamp(cam.zoom, 0.6, 1.3);
           ctx.shadowOffsetY = 3 * clamp(cam.zoom, 0.6, 1.3);
           ctx.fillStyle = "#ffffff";
           ctx.fill();
           ctx.restore();
-          ctx.lineWidth = 2.2 * clamp(cam.zoom, 0.6, 1.5);
+          ctx.lineWidth = 1.9 * clamp(cam.zoom, 0.6, 1.5);
           ctx.strokeStyle = n.color;
           ctx.stroke();
-          drawNodeIcon(ctx, p.x, p.y, r, n.color);
+          drawNodeIcon(ctx, p.x, p.y, r, n.color, iconTurnFor(n, now));
         } else {
           ctx.fillStyle = n.color;
           ctx.fill();
@@ -577,75 +716,49 @@ window.Graph = (function () {
 
         // Labels: inside the circle for the center and the main branches,
         // outside and pointing away from center for everything else.
-        ctx.fillStyle = "#17171a";
+        ctx.fillStyle = "#1d1d1f";
         ctx.textBaseline = "middle";
 
         if (n.depth === 0) {
           ctx.textAlign = "center";
-          var titleFont = "700 " + 28 * ls + "px " + FONT;
-          var subFont = "600 " + 17 * ls + "px " + FONT;
-
-          ctx.font = titleFont;
-          var titleLines = wrapLines(n.title, 150 * cam.zoom);
 
           // Fade the role subtitle and the icon in/out by the circle's
           // actual on-screen room, not raw zoom — that's what determines
           // whether they fit. The icon needs a bit more room than the
           // subtitle, so it appears just after.
-          var subAlpha = n.tag ? clamp((r - 62) / 26, 0, 1) : 0;
+          var subAlpha = n.tag ? clamp((r - 78) / 24, 0, 1) : 0;
           var d0IconAlpha = n.hasBody ? clamp((r - 66) / 20, 0, 1) : 0;
-          var subLines = [];
-          if (subAlpha > 0.01) {
-            ctx.font = subFont;
-            // Break on the tag's own "part · part" structure instead of
-            // wrapping by measured width — a fixed, deliberate line break
-            // can't overflow the way width-based wrapping did right at the
-            // edge of a line.
-            var subWidth = 210 * cam.zoom;
-            n.tag.split(" · ").forEach(function (part) {
-              subLines = subLines.concat(wrapLines(part, subWidth));
-            });
-          }
+          var nucleus = nucleusLayout(n, r, subAlpha > 0.01, d0IconAlpha > 0.01);
+          var blockTop = p.y - nucleus.totalH / 2;
+          var titleCenter = blockTop + nucleus.titleH / 2;
 
-          // Centre the title+subtitle+icon block as one unit, with real
-          // gaps between the parts, instead of independently-placed lines.
-          var titleLH = 34 * ls;
-          var subLH = 22 * ls;
-          var d0IconR = 30 * ls;
-          var d0IconH = 25 * ls;
-          var gap1 = subLines.length ? 18 * ls : 0;
-          var gap2 = d0IconAlpha > 0.01 ? 14 * ls : 0;
-          var titleBlockH = titleLines.length * titleLH;
-          var subBlockH = subLines.length * subLH;
-          var iconBlockH = d0IconAlpha > 0.01 ? d0IconH : 0;
-          var blockTop = p.y - (titleBlockH + gap1 + subBlockH + gap2 + iconBlockH) / 2;
-          var titleCenter = blockTop + titleBlockH / 2;
+          ctx.font = nucleus.titleFont;
+          ctx.fillStyle = "#1d1d1f";
+          drawLines(nucleus.titleLines, p.x, titleCenter, nucleus.titleLH);
 
-          ctx.font = titleFont;
-          ctx.fillStyle = "#17171a";
-          drawLines(titleLines, p.x, titleCenter, titleLH);
-
-          if (subLines.length) {
-            var subCenter = blockTop + titleBlockH + gap1 + subBlockH / 2;
+          if (nucleus.subtitleLines.length) {
+            var subCenter = blockTop + nucleus.titleH + nucleus.gap1 + nucleus.subtitleH / 2;
             var baseAlpha = ctx.globalAlpha;
             ctx.globalAlpha = baseAlpha * subAlpha;
-            ctx.font = subFont;
-            ctx.fillStyle = "#6b6b74";
-            drawLines(subLines, p.x, subCenter, subLH);
+            ctx.font = nucleus.subtitleFont;
+            ctx.fillStyle = "#68686f";
+            drawLines(nucleus.subtitleLines, p.x, subCenter, nucleus.subtitleLH);
             ctx.globalAlpha = baseAlpha;
-            ctx.fillStyle = "#17171a";
+            ctx.fillStyle = "#1d1d1f";
           }
 
           if (d0IconAlpha > 0.01) {
-            var d0IconCy = blockTop + titleBlockH + gap1 + subBlockH + gap2 + iconBlockH / 2;
+            var d0IconCy =
+              blockTop + nucleus.titleH + nucleus.gap1 + nucleus.subtitleH +
+              nucleus.gap2 + nucleus.iconH / 2;
             var d0BaseAlpha = ctx.globalAlpha;
             ctx.globalAlpha = d0BaseAlpha * d0IconAlpha;
-            drawNodeIcon(ctx, p.x, d0IconCy, d0IconR, n.color);
+            drawNodeIcon(ctx, p.x, d0IconCy, nucleus.iconR, n.color, iconTurnFor(n, now));
             ctx.globalAlpha = d0BaseAlpha;
           }
         } else if (n.depth === 1) {
           ctx.textAlign = "center";
-          ctx.font = "600 " + 18 * ls + "px " + FONT;
+          ctx.font = "600 " + 17 * ls + "px " + FONT;
           var d1Lines = wrapLines(n.title, 100 * cam.zoom);
           var d1LH = 21 * ls;
 
@@ -665,7 +778,7 @@ window.Graph = (function () {
             var d1IconCy = d1BlockTop + d1TitleH + d1Gap + d1IconH / 2;
             var d1BaseAlpha = ctx.globalAlpha;
             ctx.globalAlpha = d1BaseAlpha * iconAlpha;
-            drawNodeIcon(ctx, p.x, d1IconCy, d1IconR, n.color);
+            drawNodeIcon(ctx, p.x, d1IconCy, d1IconR, n.color, iconTurnFor(n, now));
             ctx.globalAlpha = d1BaseAlpha;
           }
         } else {
@@ -687,10 +800,7 @@ window.Graph = (function () {
             ctx.textAlign = "center";
             var vLines = wrapLines(n.title, 118 * ls);
             var block = (vLines.length - 1) * lh;
-            // Alternate siblings sit further out, so a row of them doesn't
-            // pile up on one line.
-            var stagger = n.sibCount > 2 ? (n.sibIndex % 2) * lh * 2 : 0;
-            var offset = r + 12 * ls + lh / 2 + stagger;
+            var offset = r + 12 * ls + lh / 2;
             var ly = sinA < 0 ? p.y - offset - block / 2 : p.y + offset + block / 2;
             drawLines(vLines, p.x, ly, lh);
           } else {
@@ -750,7 +860,13 @@ window.Graph = (function () {
     }
 
     function animateTo(target, done) {
-      if (reduceMotion) {
+      var isAtTarget =
+        Math.abs(cam.x - target.x) < 0.5 &&
+        Math.abs(cam.y - target.y) < 0.5 &&
+        Math.abs(cam.zoom - target.zoom) < 0.001;
+
+      if (reduceMotion || isAtTarget) {
+        flight = null;
         cam.x = target.x;
         cam.y = target.y;
         cam.zoom = target.zoom;
@@ -761,7 +877,7 @@ window.Graph = (function () {
         from: { x: cam.x, y: cam.y, zoom: cam.zoom },
         to: target,
         start: performance.now(),
-        dur: 520,
+        dur: 300,
         done: done,
       };
     }
@@ -820,6 +936,7 @@ window.Graph = (function () {
         var found = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
         if (found !== hovered) {
           hovered = found;
+          hoverChangedAt = performance.now();
           onHover(found);
         }
         canvas.style.cursor = found ? (found.hasBody ? "pointer" : "default") : "grab";
@@ -859,12 +976,14 @@ window.Graph = (function () {
         // Trackpad pinch arrives as ctrlKey+wheel; make it noticeably stronger.
         var intensity = e.ctrlKey ? 0.012 : 0.0022;
         zoomAt(sx, sy, Math.exp(-e.deltaY * intensity));
+        motionPauseUntil = performance.now() + MOTION_PAUSE_AFTER_ZOOM;
       },
       { passive: false }
     );
 
     canvas.addEventListener("mouseleave", function () {
       hovered = null;
+      hoverChangedAt = 0;
       onHover(null);
     });
 
@@ -875,6 +994,7 @@ window.Graph = (function () {
         build(nodes);
         resize();
         cam = { x: home.x, y: home.y, zoom: home.zoom };
+        motionStartedAt = performance.now();
         running = true;
         requestAnimationFrame(frame);
       },
@@ -898,13 +1018,22 @@ window.Graph = (function () {
           if (done) done();
           return;
         }
+        // The nucleus is the reset-view target itself — flying to it is just reset.
+        if (n.depth === 0) {
+          animateTo({ x: home.x, y: home.y, zoom: home.zoom }, done);
+          return;
+        }
         animateTo(
-          { x: n.bx, y: n.by, zoom: clamp(Math.max(cam.zoom, 0.95), minZoom, 1.6) },
+          { x: n.bx, y: n.by, zoom: clamp(home.zoom * FLYTO_ZOOM_FACTOR, minZoom, ZOOM_MAX) },
           done
         );
       },
       select: function (id) {
-        selected = id ? byId[id] || null : null;
+        var next = id ? byId[id] || null : null;
+        if (next === selected) return;
+        closingSelection = selected;
+        selected = next;
+        selectionChangedAt = performance.now();
       },
       focus: function (id) {
         focusRing = id ? byId[id] || null : null;
@@ -915,6 +1044,7 @@ window.Graph = (function () {
       zoomBy: function (factor) {
         flight = null;
         zoomAt(vw / 2, vh / 2, factor);
+        motionPauseUntil = performance.now() + MOTION_PAUSE_AFTER_ZOOM;
       },
       reduceMotion: reduceMotion,
     };

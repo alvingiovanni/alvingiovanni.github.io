@@ -9,11 +9,11 @@
   <meta property="og:title" content="Alvin Giovanni — Growth &amp; Product Analytics" />
   <meta property="og:description" content="An explorable map of five years of growth and product analytics work across fintech, e-commerce, and edtech." />
   <meta property="og:type" content="website" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%234c6fff' stroke-width='2' fill='none'%3E%3Cpath d='M16 16 L16 6 M16 16 L26 21 M16 16 L6 21'/%3E%3C/g%3E%3Cg fill='%234c6fff'%3E%3Ccircle cx='16' cy='6' r='3.5'/%3E%3Ccircle cx='26' cy='21' r='3.5'/%3E%3Ccircle cx='6' cy='21' r='3.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23fff' stroke='%2317171a' stroke-width='2.5'/%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%233867d6' stroke-width='2' fill='none'%3E%3Cpath d='M16 16 L16 6 M16 16 L26 21 M16 16 L6 21'/%3E%3C/g%3E%3Cg fill='%233867d6'%3E%3Ccircle cx='16' cy='6' r='3.5'/%3E%3Ccircle cx='26' cy='21' r='3.5'/%3E%3Ccircle cx='6' cy='21' r='3.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23fff' stroke='%231d1d1f' stroke-width='2.5'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=20260816-chart-title" />
 </head>
 <body>
 
@@ -21,23 +21,48 @@
   <canvas id="canvas" aria-hidden="true"></canvas>
 
   <header class="topbar">
-    <a class="brand" href="#/home">Alvin Giovanni<span>.</span></a>
-
     <div class="topbar-tools">
-      <div class="search-wrap">
+      <button id="text-toggle" type="button" class="btn btn-surface" aria-expanded="false">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5.5h16M4 12h16M4 18.5h10" />
+        </svg>
+        <span>All Work</span>
+      </button>
+      <a class="btn btn-primary" href="assets/resume.pdf" target="_blank" rel="noopener">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 3.5h7l4 4V20.5H7z" />
+          <path d="M14 3.5v4h4M10 12h5M10 15.5h5" />
+        </svg>
+        <span>Resume</span>
+      </a>
+      <div class="search-wrap" data-expanded="false">
+        <button id="search-toggle" class="search-toggle" type="button" aria-label="Search portfolio" aria-expanded="false" aria-controls="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="5.5" />
+            <path d="m15 15 4.5 4.5" />
+          </svg>
+        </button>
         <input
+          class="search-field"
           id="search"
           type="search"
-          placeholder="Search the map…"
+          placeholder="Search"
           aria-label="Search nodes"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="search-results"
+          aria-expanded="false"
           autocomplete="off"
           spellcheck="false"
+          tabindex="-1"
         />
-        <ul id="search-results" class="search-results" hidden></ul>
+        <ul id="search-results" class="search-results" role="listbox" aria-label="Search results" aria-live="polite" hidden></ul>
       </div>
-      <button id="text-toggle" type="button" class="btn btn-ghost">Read as text</button>
-      <a class="btn" href="assets/resume.pdf" target="_blank" rel="noopener">Resume</a>
     </div>
+
+    <a class="brand" href="#/home" aria-label="Alvin Giovanni, home">
+      <span class="brand-full">Alvin Giovanni</span><span class="brand-short">Alvin</span><span class="brand-dot">.</span>
+    </a>
   </header>
 
   <div class="controls" role="group" aria-label="Canvas controls">
@@ -46,7 +71,7 @@
     <button id="zoom-reset" type="button" class="wide">Reset view</button>
   </div>
 
-  <p class="hint" id="hint">Drag to explore · scroll to zoom · click a circle to read</p>
+  <p class="hint" id="hint">Drag to explore <span>·</span> Scroll to zoom <span>·</span> Select a circle to read</p>
 
   <p class="loading" id="loading">Loading the map…</p>
 
@@ -64,11 +89,12 @@
   </div>
 
   <!-- Linear reading view: the whole site as one document. -->
-  <div class="text-view" id="text-view" data-open="false" hidden>
+  <div class="text-view" id="text-view" data-open="false" role="dialog" aria-modal="true" aria-labelledby="text-view-title" hidden>
     <div class="text-view-inner">
       <button class="modal-close" id="text-view-close" type="button" aria-label="Close text view">×</button>
-      <h1>Alvin Giovanni — everything, in order</h1>
-      <p class="text-view-lede">The same content as the map, laid out as one page.</p>
+      <p class="eyebrow">Portfolio index</p>
+      <h1 id="text-view-title">Alvin Giovanni</h1>
+      <p class="text-view-lede">The complete portfolio, arranged for linear reading.</p>
       <div id="text-view-body"></div>
     </div>
   </div>
@@ -76,7 +102,7 @@
   <noscript>
     <div class="noscript">
       <h1>Alvin Giovanni</h1>
-      <p><strong>Growth &amp; Product Analytics · Data Strategy</strong></p>
+      <p><strong>Growth &amp; Product Analytics</strong></p>
       <p>I turn messy behavioral data into growth decisions people actually act on. 5+ years
       partnering with executives across fintech, e-commerce, and edtech — building segmentation
       models, propensity scores, and attribution frameworks that move real business metrics,
@@ -88,8 +114,8 @@
     </div>
   </noscript>
 
-  <script src="js/markdown.js"></script>
-  <script src="js/graph.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/markdown.js?v=20260816-chart-title"></script>
+  <script src="js/graph.js?v=20260816-chart-title"></script>
+  <script src="js/app.js?v=20260816-chart-title"></script>
 </body>
 </html>

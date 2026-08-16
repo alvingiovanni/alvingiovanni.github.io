@@ -4,11 +4,13 @@
   "nodes": [
     "index.md",
     "work/index.md",
-    "work/segmentation.md",
-    "work/channel-affinity.md",
-    "work/inflation-diagnostic.md",
-    "work/ltv-cac.md",
-    "work/bnpl-perspective.md",
+    "work/tokopedia/index.md",
+    "work/tokopedia/bnpl-perspective.md",
+    "work/tokopedia/channel-affinity.md",
+    "work/tokopedia/inflation-diagnostic.md",
+    "work/tokopedia/segmentation.md",
+    "work/mindvalley/index.md",
+    "work/mindvalley/ltv-cac.md",
     "skills/index.md",
     "skills/analytics/index.md",
     "skills/analytics/growth-analytics.md",
@@ -41,12 +43,6 @@
     "values/data-to-decisions-fast.md",
     "values/systems-over-one-offs.md",
     "values/mentoring.md",
-    "story/index.md",
-    "story/civil-engineering.md",
-    "story/rpx-fedex-operations.md",
-    "story/bootcamp-pivot-2021.md",
-    "story/tokopedia-paylater.md",
-    "story/mindvalley.md",
     "leisure.md"
   ]
 }

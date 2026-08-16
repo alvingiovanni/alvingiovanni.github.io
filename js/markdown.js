@@ -12,13 +12,15 @@ window.Markdown = (function () {
   /* ---------------- charts ---------------- */
 
   // ```chart
-  // type: bar
-  // note: illustrative, indexed to 100
-  // Before: 100
-  // After: 126
+  // type: column
+  // title: Marketing Engagement Uplift
+  // y-label: Marketing engagement
+  // note: illustrative, relative to a baseline of 1×
+  // Before: 1×
+  // After: 1.26×
   // ```
   function parseChart(src) {
-    var cfg = { type: "bar", note: "", max: null, points: [] };
+    var cfg = { type: "bar", title: "", yLabel: "", note: "", max: null, points: [] };
     src.split("\n").forEach(function (raw) {
       var line = raw.trim();
       if (!line || line.indexOf(":") === -1) return;
@@ -27,6 +29,8 @@ window.Markdown = (function () {
       var val = line.slice(i + 1).trim();
       var lower = key.toLowerCase();
       if (lower === "type") cfg.type = val.toLowerCase();
+      else if (lower === "title") cfg.title = val;
+      else if (lower === "y-label") cfg.yLabel = val;
       else if (lower === "note") cfg.note = val;
       else if (lower === "max") cfg.max = parseFloat(val);
       else {
@@ -92,6 +96,76 @@ window.Markdown = (function () {
           })
           .join("") +
         "</svg>";
+    } else if (cfg.type === "column") {
+      var columnW = 620;
+      var columnH = 260;
+      var columnLeft = 82;
+      var columnRight = 18;
+      var columnTop = 28;
+      var columnBottom = 42;
+      var plotW = columnW - columnLeft - columnRight;
+      var plotH = columnH - columnTop - columnBottom;
+      var dataMax = Math.max.apply(null, values);
+      var roughStep = Math.max(max, dataMax, 1) / 3;
+      var magnitude = Math.pow(10, Math.floor(Math.log(roughStep) / Math.LN10));
+      var normalizedStep = roughStep / magnitude;
+      var niceStep =
+        (normalizedStep <= 1 ? 1 : normalizedStep <= 2 ? 2 : normalizedStep <= 5 ? 5 : 10) *
+        magnitude;
+      var columnMax = Math.ceil(Math.max(max, niceStep) / niceStep) * niceStep;
+      var tickCount = Math.round(columnMax / niceStep);
+      var bandW = plotW / cfg.points.length;
+      var barW = Math.min(112, bandW * 0.6);
+      var chartLabel = cfg.points
+        .map(function (p) {
+          return p.label + ": " + p.raw;
+        })
+        .join(", ");
+      if (cfg.yLabel) chartLabel = cfg.yLabel + ". " + chartLabel;
+
+      var grid = Array.apply(null, Array(tickCount + 1))
+        .map(function (_, i) {
+          var tickValue = i * niceStep;
+          var y = columnTop + plotH - (tickValue / columnMax) * plotH;
+          var tickLabel = String(parseFloat(tickValue.toFixed(4))) + "×";
+          return (
+            '<line x1="' + columnLeft + '" y1="' + y.toFixed(1) + '" x2="' +
+            (columnW - columnRight) + '" y2="' + y.toFixed(1) +
+            '" class="chart-grid' + (i === 0 ? " chart-grid-baseline" : "") + '" />' +
+            '<text x="' + (columnLeft - 12) + '" y="' + (y + 4).toFixed(1) +
+            '" class="chart-y-axis" text-anchor="end">' + escapeText(tickLabel) + "</text>"
+          );
+        })
+        .join("");
+
+      var columns = cfg.points
+        .map(function (p, index) {
+          var centerX = columnLeft + bandW * (index + 0.5);
+          var barH = Math.max(2, (Math.max(0, p.value) / columnMax) * plotH);
+          var barY = columnTop + plotH - barH;
+          var barClass =
+            "chart-column-bar" +
+            (p.label.toLowerCase() === "before" ? " chart-column-before" : "");
+          return (
+            '<rect x="' + (centerX - barW / 2).toFixed(1) + '" y="' + barY.toFixed(1) +
+            '" width="' + barW.toFixed(1) + '" height="' + barH.toFixed(1) +
+            '" rx="4" class="' + barClass + '" />' +
+            '<text x="' + centerX.toFixed(1) + '" y="' + Math.max(16, barY - 8).toFixed(1) +
+            '" class="chart-column-label" text-anchor="middle">' + escapeText(p.raw) + "</text>" +
+            '<text x="' + centerX.toFixed(1) + '" y="' + (columnH - 12) +
+            '" class="chart-x-axis" text-anchor="middle">' + escapeText(p.label) + "</text>"
+          );
+        })
+        .join("");
+      body =
+        '<svg class="chart-svg chart-column-svg" viewBox="0 0 ' + columnW + " " + columnH +
+        '" role="img" aria-label="' + escapeAttr(chartLabel) + '">' +
+        (cfg.yLabel
+          ? '<text x="18" y="' + (columnTop + plotH / 2).toFixed(1) +
+            '" class="chart-y-title" text-anchor="middle" transform="rotate(-90 18 ' +
+            (columnTop + plotH / 2).toFixed(1) + ')">' + escapeText(cfg.yLabel) + "</text>"
+          : "") +
+        grid + columns + "</svg>";
     } else {
       body = cfg.points
         .map(function (p) {
@@ -111,6 +185,7 @@ window.Markdown = (function () {
 
     return (
       '<figure class="chart chart-' + escapeAttr(cfg.type) + '">' +
+      (cfg.title ? '<h3 class="chart-title">' + escapeText(cfg.title) + "</h3>" : "") +
       body +
       (cfg.note ? '<figcaption class="chart-note">' + inline(cfg.note) + "</figcaption>" : "") +
       "</figure>"

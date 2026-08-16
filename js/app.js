@@ -17,13 +17,13 @@
 
   // Friendly color names → the --c-* tokens in css/style.css.
   var COLORS = {
-    blue: "#4c6fff",
-    purple: "#8b5cf6",
-    green: "#16a085",
-    orange: "#f5a524",
-    pink: "#e85d75",
-    teal: "#0ea5a5",
-    slate: "#64748b",
+    blue: "#3867d6",
+    purple: "#7655c5",
+    green: "#27866e",
+    orange: "#bd7623",
+    pink: "#c65370",
+    teal: "#258789",
+    slate: "#657184",
   };
 
   var el = {};
@@ -33,6 +33,8 @@
   var warnings = [];
   var currentOpen = null;
   var lastFocused = null;
+  var textViewLastFocused = null;
+  var searchActiveIndex = -1;
 
   /* ---------------- boot ---------------- */
 
@@ -42,6 +44,8 @@
     el.modal = document.getElementById("modal");
     el.modalBody = document.getElementById("modal-body");
     el.closeBtn = document.getElementById("modal-close");
+    el.searchWrap = document.querySelector(".search-wrap");
+    el.searchToggle = document.getElementById("search-toggle");
     el.search = document.getElementById("search");
     el.results = document.getElementById("search-results");
     el.srNav = document.getElementById("sr-nav");
@@ -279,7 +283,7 @@
       (children[n.parent] = children[n.parent] || []).push(n);
     });
     (function inherit(node) {
-      if (!node.color) node.color = "#17171a";
+      if (!node.color) node.color = "#1d1d1f";
       (children[node.id] || []).forEach(function (kid) {
         if (!kid.color) kid.color = node.color;
         inherit(kid);
@@ -349,15 +353,16 @@
     currentOpen = id;
     graph.select(id);
 
-    // Pan the node to the middle of the screen first, then pop the panel over it.
+    // Start moving the node toward the middle, but do not make the dialog wait
+    // for the full camera animation before it becomes available.
     graph.flyTo(id, function () {
       renderModal(node);
     });
-    // Safety net: requestAnimationFrame is throttled in background tabs, so the
-    // fly-to callback may never arrive. renderModal is idempotent.
+    // A short handoff preserves the visual connection to the selected node
+    // while keeping the interface responsive. renderModal is idempotent.
     setTimeout(function () {
       renderModal(node);
-    }, 600);
+    }, 160);
   }
 
   function renderModal(node) {
@@ -368,7 +373,7 @@
 
     lastFocused = document.activeElement;
     el.modal.dataset.node = node.id;
-    el.modal.style.setProperty("--accent", node.color || "#17171a");
+    el.modal.style.setProperty("--accent", node.color || "#1d1d1f");
 
     var html = "";
     if (node.tag) html += '<p class="modal-tag">' + escapeHtml(node.tag) + "</p>";
@@ -438,19 +443,26 @@
           toggleTextView(false);
         } else if (currentOpen) {
           closeModal();
-        } else if (document.activeElement === el.search) {
-          el.search.value = "";
-          renderResults([]);
-          el.search.blur();
+        } else if (el.searchWrap.getAttribute("data-expanded") === "true") {
+          setSearchOpen(false, true);
         }
         return;
       }
       // "/" jumps to search, the way most map/search UIs behave.
-      if (e.key === "/" && document.activeElement !== el.search && !currentOpen) {
+      if (
+        e.key === "/" &&
+        document.activeElement !== el.search &&
+        !currentOpen &&
+        el.textView.getAttribute("data-open") !== "true"
+      ) {
         e.preventDefault();
-        el.search.focus();
+        setSearchOpen(true);
       }
-      if (e.key === "Tab" && currentOpen) trapFocus(e);
+      if (e.key === "Tab" && currentOpen) {
+        trapFocus(e, el.modal);
+      } else if (e.key === "Tab" && el.textView.getAttribute("data-open") === "true") {
+        trapFocus(e, el.textView);
+      }
     });
 
     document.getElementById("zoom-in").addEventListener("click", function () {
@@ -472,17 +484,38 @@
       toggleTextView(false);
     });
 
+    el.searchToggle.addEventListener("click", function () {
+      var isOpen = el.searchWrap.getAttribute("data-expanded") === "true";
+      setSearchOpen(!isOpen, isOpen);
+    });
+    el.search.addEventListener("focus", function () {
+      if (el.searchWrap.getAttribute("data-expanded") !== "true") setSearchOpen(true);
+    });
     el.search.addEventListener("input", function () {
-      renderResults(searchNodes(el.search.value));
+      searchActiveIndex = -1;
+      renderResults(searchNodes(el.search.value), el.search.value);
     });
     el.search.addEventListener("keydown", function (e) {
+      var buttons = el.results.querySelectorAll("button");
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && buttons.length) {
+        e.preventDefault();
+        var direction = e.key === "ArrowDown" ? 1 : -1;
+        var next = searchActiveIndex + direction;
+        if (next < 0) next = buttons.length - 1;
+        if (next >= buttons.length) next = 0;
+        setActiveResult(next);
+        return;
+      }
       if (e.key === "Enter") {
-        var first = el.results.querySelector("button");
-        if (first) first.click();
+        var chosen = buttons[searchActiveIndex] || buttons[0];
+        if (chosen) {
+          e.preventDefault();
+          chosen.click();
+        }
       }
     });
     document.addEventListener("click", function (e) {
-      if (!el.results.contains(e.target) && e.target !== el.search) renderResults([]);
+      if (!el.searchWrap.contains(e.target)) setSearchOpen(false, false);
     });
 
     // Dismiss the "drag to explore" hint the first time the user does anything.
@@ -494,8 +527,34 @@
     });
   }
 
-  function trapFocus(e) {
-    var focusables = el.modal.querySelectorAll(
+  function setSearchOpen(open, returnFocus) {
+    var isOpen = el.searchWrap.getAttribute("data-expanded") === "true";
+    if (open === isOpen) {
+      if (open && document.activeElement !== el.search) el.search.focus();
+      return;
+    }
+
+    el.searchWrap.setAttribute("data-expanded", open ? "true" : "false");
+    el.searchToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("search-open", open);
+
+    if (open) {
+      el.search.removeAttribute("tabindex");
+      window.requestAnimationFrame(function () {
+        el.search.focus();
+      });
+      return;
+    }
+
+    el.search.value = "";
+    renderResults([], "");
+    el.search.setAttribute("tabindex", "-1");
+    el.search.blur();
+    if (returnFocus) el.searchToggle.focus();
+  }
+
+  function trapFocus(e, container) {
+    var focusables = container.querySelectorAll(
       'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
     );
     if (!focusables.length) return;
@@ -515,35 +574,51 @@
     if (!q) return [];
     return nodes
       .filter(function (n) {
-        return n.title.toLowerCase().indexOf(q) !== -1;
+        return (
+          n.title.toLowerCase().indexOf(q) !== -1 ||
+          String(n.tag || "").toLowerCase().indexOf(q) !== -1
+        );
       })
       .slice(0, 8);
   }
 
-  function renderResults(list) {
-    if (!list.length) {
+  function renderResults(list, query) {
+    var q = String(query || "").trim();
+    searchActiveIndex = -1;
+    el.search.removeAttribute("aria-activedescendant");
+
+    if (!list.length && !q) {
       el.results.innerHTML = "";
       el.results.setAttribute("hidden", "");
+      el.search.setAttribute("aria-expanded", "false");
       return;
     }
+
+    if (!list.length) {
+      el.results.innerHTML = '<li class="search-empty">No nodes match “' + escapeHtml(q) + '”.</li>';
+      el.results.removeAttribute("hidden");
+      el.search.setAttribute("aria-expanded", "true");
+      return;
+    }
+
     el.results.innerHTML = list
-      .map(function (n) {
+      .map(function (n, index) {
         return (
-          '<li><button type="button" data-id="' + escapeHtml(n.id) + '">' +
-          '<span class="dot" style="background:' + (n.color || "#17171a") + '"></span>' +
-          escapeHtml(n.title) +
+          '<li role="presentation"><button id="search-option-' + index + '" role="option" ' +
+          'aria-selected="false" type="button" data-id="' + escapeHtml(n.id) + '">' +
+          '<span class="dot" style="background:' + (n.color || "#1d1d1f") + '"></span>' +
+          highlightMatch(n.title, q) +
           (n.hasBody ? "" : '<span class="result-note">label</span>') +
           "</button></li>"
         );
       })
       .join("");
     el.results.removeAttribute("hidden");
+    el.search.setAttribute("aria-expanded", "true");
     Array.prototype.forEach.call(el.results.querySelectorAll("button"), function (btn) {
       btn.addEventListener("click", function () {
         var node = byId[btn.dataset.id];
-        el.search.value = "";
-        renderResults([]);
-        el.search.blur();
+        setSearchOpen(false, false);
         if (node.hasBody) navigate(node.id);
         else {
           graph.select(node.id);
@@ -551,6 +626,31 @@
         }
       });
     });
+  }
+
+  function setActiveResult(index) {
+    var buttons = el.results.querySelectorAll("button");
+    if (!buttons.length) return;
+    searchActiveIndex = index;
+    Array.prototype.forEach.call(buttons, function (button, i) {
+      var active = i === index;
+      button.setAttribute("data-active", active ? "true" : "false");
+      button.setAttribute("aria-selected", active ? "true" : "false");
+      if (active) button.scrollIntoView({ block: "nearest" });
+    });
+    el.search.setAttribute("aria-activedescendant", buttons[index].id);
+  }
+
+  function highlightMatch(text, query) {
+    var value = String(text);
+    var q = String(query || "").trim().toLowerCase();
+    var index = value.toLowerCase().indexOf(q);
+    if (!q || index === -1) return escapeHtml(value);
+    return (
+      escapeHtml(value.slice(0, index)) +
+      "<mark>" + escapeHtml(value.slice(index, index + q.length)) + "</mark>" +
+      escapeHtml(value.slice(index + q.length))
+    );
   }
 
   function buildSrNav() {
@@ -604,7 +704,9 @@
 
   function toggleTextView(open) {
     el.textView.setAttribute("data-open", open ? "true" : "false");
+    document.getElementById("text-toggle").setAttribute("aria-expanded", open ? "true" : "false");
     if (open) {
+      textViewLastFocused = document.activeElement;
       el.textView.removeAttribute("hidden");
       document.body.classList.add("modal-open");
       el.textView.scrollTop = 0;
@@ -612,6 +714,10 @@
     } else {
       el.textView.setAttribute("hidden", "");
       if (!currentOpen) document.body.classList.remove("modal-open");
+      if (textViewLastFocused && document.contains(textViewLastFocused)) {
+        textViewLastFocused.focus();
+        textViewLastFocused = null;
+      }
     }
   }
 

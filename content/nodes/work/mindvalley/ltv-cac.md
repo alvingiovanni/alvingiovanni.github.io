@@ -1,11 +1,10 @@
 ---
 title: LTV/CAC Forecasting & Attribution
-order: 4
+order: 1
 tag: Mindvalley · 2024–Present
 metric: ~20%
 metric-label: Channel revenue increase
 ---
-
 ## Problem
 
 Marketing investment decisions were being made channel-by-channel, without a consistent view
@@ -28,8 +27,10 @@ guardrails, and a ~20% revenue increase in channels that attribution revealed ha
 underinvested.
 
 ```chart
-type: bar
-note: Illustrative — indexed to a baseline of 100, reflecting the ~20% channel revenue increase reported above. Not actual figures.
-Before: 100
-After: 120
+type: column
+title: Channel Revenue Increase
+y-label: Channel revenue
+note: Illustrative — shown relative to a baseline of 1×, reflecting the ~20% channel revenue increase reported above. Not actual figures.
+Before: 1×
+After: ≈1.20×
 ```

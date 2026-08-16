@@ -22,10 +22,12 @@ You can use **bold**, *italic*, [links](https://example.com), and bullet lists:
 A chart you type by hand:
 
 ```chart
-type: bar
-note: Illustrative — indexed to a baseline of 100. Not actual figures.
-Before: 100
-After: 126
+type: column
+title: Metric Comparison
+y-label: Metric name
+note: Illustrative — shown relative to a baseline of 1×. Not actual figures.
+Before: 1×
+After: 1.26×
 ```
 
 Or an image you exported yourself:

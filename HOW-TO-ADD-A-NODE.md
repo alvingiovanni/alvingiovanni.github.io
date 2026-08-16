@@ -145,16 +145,20 @@ Normal paragraph. **Bold**, *italic*, and [a link](https://example.com).
 
 ````markdown
 ```chart
-type: bar
-note: Illustrative — indexed to a baseline of 100. Not actual figures.
-Before: 100
-After: 126
+type: column
+title: Marketing Engagement Uplift
+y-label: Marketing engagement
+note: Illustrative — shown relative to a baseline of 1×. Not actual figures.
+Before: 1×
+After: 1.26×
 ```
 ````
 
-Every line that looks like `Name: number` becomes a bar. `type: line` draws a
-line chart instead. `note:` prints the small grey disclaimer underneath. Bars
-automatically use the circle's own colour.
+Every line that looks like `Name: number` becomes a column. `title:` adds the
+heading above the plot, and `y-label:` names the metric on the vertical axis.
+`type: bar` draws a horizontal bar chart, while `type: line` draws a line chart.
+`note:` prints the small grey disclaimer underneath. Charts automatically use
+the circle's own colour; a column named `Before` uses neutral grey.
 
 **An image:** drop the file into `assets/img/`, then:
 

@@ -1,8 +1,7 @@
 ---
 title: Values
-parent: alvin
+order: 3
 color: orange
-leaves: Data → decisions fast, Systems over one-offs, Mentorship
 ---
 
 I'd rather ship a framework that outlives one campaign than a one-off analysis that answers

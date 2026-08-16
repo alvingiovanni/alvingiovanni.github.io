@@ -1,6 +1,6 @@
 ---
 title: Work
-parent: alvin
+order: 1
 color: blue
 ---
 

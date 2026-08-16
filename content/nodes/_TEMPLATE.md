@@ -1,7 +1,6 @@
 ---
 title: The name shown on the circle
-parent: work
-color: blue
+order: 6
 tag: Company · 2024–2025
 metric: +00%
 metric-label: What that number is

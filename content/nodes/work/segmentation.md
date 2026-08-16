@@ -1,6 +1,6 @@
 ---
 title: Segmentation & Propensity Scoring
-parent: work
+order: 1
 tag: Tokopedia (Bytedance) · 2021–2024
 metric: +26%
 metric-label: Engagement uplift

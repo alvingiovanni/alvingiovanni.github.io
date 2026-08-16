@@ -1,6 +1,6 @@
 ---
 title: LTV/CAC Forecasting & Attribution
-parent: work
+order: 4
 tag: Mindvalley · 2024–Present
 metric: ~20%
 metric-label: Channel revenue increase

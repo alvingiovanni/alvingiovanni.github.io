@@ -1,6 +1,6 @@
 ---
 title: Skills
-parent: alvin
+order: 2
 color: purple
 ---
 

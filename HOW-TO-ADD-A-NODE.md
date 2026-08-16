@@ -1,45 +1,87 @@
 # How to add, edit, or remove a circle
 
 Every circle on the site is one file in `content/nodes/`. You never have to touch
-any code — just write text.
+any code — just write text and put the file in the right folder.
+
+---
+
+## The one big idea: folders are the map
+
+**The folder a file sits in is the circle it hangs off.** That's the whole
+structure — there's nothing else to set.
+
+```
+content/nodes/
+├── index.md                      ←  Alvin Giovanni  (the centre)
+├── leisure.md                    ←  hangs off the centre
+├── work/
+│   ├── index.md                  ←  the "Work" circle itself
+│   ├── segmentation.md           ←  hangs off Work
+│   └── ltv-cac.md                ←  hangs off Work
+└── skills/
+    ├── index.md                  ←  the "Skills" circle itself
+    └── programming/
+        ├── index.md              ←  the "Programming & Data" circle
+        ├── python.md             ←  hangs off Programming & Data
+        └── sql.md                ←  hangs off Programming & Data
+```
+
+Two rules follow from that:
+
+- **A folder's own text lives in its `index.md`.** If a circle has children, it
+  needs a folder, and the `index.md` inside is that circle.
+- **To move a circle somewhere else on the map, drag the file to another
+  folder.** Nothing inside the file changes.
 
 ---
 
 ## Add a new circle
 
-**1. Copy the template.** Duplicate `content/nodes/_TEMPLATE.md` and rename it.
-The filename becomes the web address, so keep it lowercase with dashes:
+**1. Pick the folder** it should hang off — that decides where it lands.
+
+**2. Copy `content/nodes/_TEMPLATE.md`** into that folder and rename it. The
+filename becomes the web address, so keep it lowercase with dashes:
 
 ```
-content/nodes/customer-churn.md   →   yoursite.com/#/customer-churn
+content/nodes/work/customer-churn.md   →   yoursite.com/#/customer-churn
 ```
 
-**2. Fill in the settings block** at the very top, between the two `---` lines:
+Filenames have to be unique across **all** folders, since they're web addresses.
+
+**3. Fill in the settings block** at the top, between the two `---` lines:
 
 ```
 ---
 title: Customer Churn Model
-parent: work
-color: blue
+order: 6
 tag: Mindvalley · 2025
 metric: −18%
 metric-label: Monthly churn
 ---
 ```
 
-**3. Write the body** underneath, in normal sentences.
+**4. Write the body** underneath, in normal sentences.
 
-**4. Add the filename to the list.** Open `content/nodes.json` and add one line:
+**5. Save and commit.** That's it — the list the site reads updates itself
+(see "The list, and why you can ignore it" below).
 
-```json
-"customer-churn.md",
+---
+
+## Giving a circle children
+
+Say you want things hanging off `customer-churn.md`:
+
+1. Make a folder next to it called `customer-churn/`
+2. Move the file into it and rename it `index.md`
+3. Put the child files in that same folder
+
 ```
-
-Every line except the last one inside the `[ ... ]` needs a comma at the end.
-That's the one place a typo can bite — if you get it wrong the site will tell
-you, in plain English, at the top of the page.
-
-**5. Save.** Refresh the page and your circle is there, already wired up.
+work/
+└── customer-churn/
+    ├── index.md          ←  the file you already wrote
+    ├── survival-model.md
+    └── save-offers.md
+```
 
 ---
 
@@ -48,24 +90,43 @@ you, in plain English, at the top of the page.
 | Setting | What it does | Required? |
 | --- | --- | --- |
 | `title` | The label on the circle | Yes |
-| `parent` | Which circle it hangs off — use another file's name without `.md` | Yes, except for the one center circle |
+| `order` | Where it sits among its siblings — `1` first, `2` next, and so on. No `order` means it goes last | No |
 | `color` | `blue`, `purple`, `green`, `orange`, `pink`, `teal`, `slate` | No — inherits from its parent |
 | `tag` | Small line above the title (employer, dates) | No |
 | `metric` | The big number, e.g. `+26%` | No |
 | `metric-label` | Small text next to the big number | No |
-| `leaves` | Quick keyword circles, comma-separated — no file needed for each | No |
 | `angle` | Force a branch to point a direction. `0` = up, `90` = right, `180` = down, `270` = left | No |
 | `size` | `sm` or `lg` to make the circle smaller/bigger | No |
 | `draft` | `true` hides it from the site without deleting the file | No |
 
-**`leaves` is the shortcut for keyword circles.** These become small dots with a
-label and nothing to click — that's how the skill lists work:
+There is **no `parent:` setting** — the folder does that job. If you write one,
+the site will tell you to delete it.
+
+---
+
+## Two shapes of circle — same file, same rules
+
+There's only one kind of node file. What decides how a circle looks is whether
+you wrote anything **underneath** the settings block:
+
+| | Big circle, clickable | Small dot, just a label |
+| --- | --- | --- |
+| Has text under the `---` block | Yes | No |
+| Opens a panel when clicked | Yes | No |
+| Has its own web address | Yes | No |
+| Example | `work/segmentation.md` | `skills/programming/python.md` |
+
+So `python.md` is nothing but a settings block:
 
 ```
-leaves: Python, SQL, dbt, Airflow
+---
+title: Python
+order: 1
+---
 ```
 
-Avoid commas inside a leaf name — commas are what separate them.
+Want to say something about Python one day? Write a paragraph under the `---`
+and it becomes a clickable circle. Delete the paragraph and it's a dot again.
 
 ---
 
@@ -113,11 +174,30 @@ front, even though the `.md` file itself lives in a subfolder.
 
 ## Edit or remove a circle
 
-- **Edit** — open the `.md` file, change the words, save. Nothing else to do.
-- **Remove temporarily** — add `draft: true` to the settings block.
-- **Remove for good** — delete the file *and* remove its line from
-  `content/nodes.json`. If you forget the second step you'll get a friendly
-  warning banner telling you exactly which line to fix.
+- **Edit** — open the `.md` file, change the words, save.
+- **Move** — drag the file into a different folder.
+- **Reorder** — change its `order:` number.
+- **Hide temporarily** — add `draft: true` to the settings block.
+- **Remove for good** — delete the file. (If it had a folder of children, delete
+  the folder too, or those children lose the circle they hung off.)
+
+---
+
+## The list, and why you can ignore it
+
+`content/nodes.json` is a list of every node file. The site needs it because a
+website can't look inside a folder on its own — it can only fetch files it has
+been told about.
+
+**You don't maintain it.** A GitHub Action regenerates it every time you push a
+change to `content/nodes/`, and commits the result. Add a file, commit, done —
+including when you're editing on github.com from your phone.
+
+If you ever want to update it yourself, run:
+
+```sh
+python3 tools/build-node-list.py
+```
 
 ---
 
@@ -134,6 +214,7 @@ Terminal and run:
 
 ```sh
 cd path/to/portfolio
+python3 tools/build-node-list.py
 python3 -m http.server 8000
 ```
 
@@ -144,9 +225,9 @@ Then visit `http://localhost:8000`. Press `Ctrl+C` in Terminal when you're done.
 ## If something looks wrong
 
 The site tells you rather than breaking. A peach-coloured banner at the top
-names the exact file and problem — a misspelled filename, a `parent` that
-doesn't exist, a colour it doesn't recognise, a missing comma in
-`content/nodes.json`. Everything else keeps working while you fix it.
+names the exact file and problem — a file in a folder with no `index.md`, two
+files sharing a name, a colour it doesn't recognise, a leftover `parent:` line.
+Everything else keeps working while you fix it.
 
 ---
 

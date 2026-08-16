@@ -1,0 +1,46 @@
+
+# Keeps content/nodes.json in step with the files in content/nodes/.
+#
+# The site can't discover files by itself (GitHub Pages serves files but can't
+# list a folder), so it needs the list. This regenerates it after every push
+# that touches the content folder, and commits it if it changed — so adding a
+# circle is just adding a .md file, including from the github.com editor.
+
+name: Update node list
+
+on:
+  push:
+    paths:
+      - "content/nodes/**"
+      - "tools/build-node-list.py"
+      - ".github/workflows/node-list.yml"
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  # If several commits land quickly, only the newest run matters.
+  group: node-list-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild content/nodes.json
+        run: python3 tools/build-node-list.py
+
+      - name: Commit if it changed
+        run: |
+          if git diff --quiet -- content/nodes.json; then
+            echo "Node list already up to date — nothing to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content/nodes.json
+          git commit -m "Update node list [skip ci]"
+          git push

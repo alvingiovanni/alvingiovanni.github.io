@@ -1,6 +1,6 @@
 ---
 title: Leisure
-parent: alvin
+order: 5
 color: green
 ---
 
@@ -11,6 +11,5 @@ travel, music, food, games, whatever's actually true. A little of this does more
 you as a person than anything a resume can.
 
 To edit: open `content/nodes/leisure.md`, replace these paragraphs, and save. If you want a
-few keywords floating off this circle, add a line like this to the settings block at the top:
-
-`leaves: Cooking, Football, Photography`
+few keywords floating off this circle, make a `leisure/` folder, move this file into it as
+`leisure/index.md`, and drop a small file in beside it for each keyword.

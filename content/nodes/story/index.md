@@ -1,8 +1,7 @@
 ---
 title: Story
-parent: alvin
+order: 4
 color: pink
-leaves: Civil engineering, RPX–FedEx operations, Bootcamp pivot 2021, Tokopedia PayLater, Mindvalley
 ---
 
 I didn't start in data. I trained as a civil engineer, then spent a few years as an assistant

@@ -34,9 +34,12 @@ window.Graph = (function () {
   }
 
   // Canvas 2D can't read CSS custom properties, so the font stack is spelled out.
-  var FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  var FONT = '"Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 
-  var ZOOM_MIN = 0.15;
+  // Absolute safety floor used only inside computeFit()'s own iterative
+  // solve. The zoom-out limit users actually hit is the dynamic `minZoom`
+  // below, which tracks "the whole map is visible" for the current tree.
+  var FIT_ITER_FLOOR = 0.05;
   var ZOOM_MAX = 3;
 
   function ringAt(d) {
@@ -106,7 +109,7 @@ window.Graph = (function () {
   }
 
   function nodeRadius(node) {
-    if (node.depth === 0) return 70;
+    if (node.depth === 0) return 94;
     if (node.depth === 1) return 52;
     if (node.size === "lg") return 24;
     if (node.size === "sm") return 6;
@@ -122,6 +125,26 @@ window.Graph = (function () {
     var g = parseInt(h.substring(2, 4), 16);
     var b = parseInt(h.substring(4, 6), 16);
     return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
+  }
+
+  // Draws a small magnifying-glass glyph at the centre of a clickable node,
+  // in place of the plain dot. `r` is the node's on-screen radius.
+  function drawNodeIcon(ctx, x, y, r, color) {
+    var lensR = r * 0.32;
+    var lensCx = x - r * 0.1;
+    var lensCy = y - r * 0.1;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.3, r * 0.15);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(lensCx, lensCy, lensR, 0, TAU);
+    ctx.stroke();
+    var hx = lensCx + lensR * Math.cos(Math.PI / 4);
+    var hy = lensCy + lensR * Math.sin(Math.PI / 4);
+    ctx.beginPath();
+    ctx.moveTo(hx, hy);
+    ctx.lineTo(x + r * 0.42, y + r * 0.42);
+    ctx.stroke();
   }
 
   function easeInOutCubic(t) {
@@ -145,7 +168,9 @@ window.Graph = (function () {
     var root = null;
 
     var cam = { x: 0, y: 0, zoom: 1 };
-    var fit = { x: 0, y: 0, zoom: 1 };
+    var fit = { x: 0, y: 0, zoom: 1 };   // frames the whole tree — the zoom-out floor
+    var home = { x: 0, y: 0, zoom: 1 };  // nucleus + first ring — initial view & reset target
+    var minZoom = FIT_ITER_FLOOR;
     var vw = 0,
       vh = 0,
       dpr = 1;
@@ -167,6 +192,7 @@ window.Graph = (function () {
         var node = {
           id: n.id,
           title: n.title,
+          tag: n.tag || "",
           parentId: n.parent || null,
           color: n.color,
           hasBody: !!n.hasBody,
@@ -249,12 +275,13 @@ window.Graph = (function () {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       if (Math.abs(squashFor(vw, vh) - Y_SQUASH) > 0.02) applyLayout();
       computeFit();
+      computeHome();
     }
 
     // Bounding box of the map at a given zoom. Labels are drawn at a roughly
     // constant *screen* size, so how much world space they occupy depends on
     // the zoom — hence the parameter.
-    function boundsAtZoom(z, labelWeight) {
+    function boundsAtZoom(z, labelWeight, nodeList) {
       var minX = Infinity,
         maxX = -Infinity,
         minY = Infinity,
@@ -267,7 +294,7 @@ window.Graph = (function () {
         maxY = Math.max(maxY, y + padY);
       }
 
-      all.forEach(function (n) {
+      (nodeList || all).forEach(function (n) {
         include(n.bx, n.by, n.r + 10, n.r + 10);
         if (n.depth < 2) return; // labels sit inside the circle up here
 
@@ -313,7 +340,7 @@ window.Graph = (function () {
         b = boundsAtZoom(z, labelWeight);
         var next = clamp(
           Math.min(availW / (b.maxX - b.minX), availH / (b.maxY - b.minY)),
-          ZOOM_MIN,
+          FIT_ITER_FLOOR,
           1.1
         );
         if (Math.abs(next - z) < 0.004) {
@@ -330,6 +357,52 @@ window.Graph = (function () {
         x: (b.minX + b.maxX) / 2,
         y: (b.minY + b.maxY) / 2 - (freeCenterY - vh / 2) / z,
         zoom: z,
+      };
+
+      // Nobody should be able to zoom out past "the whole map is visible" —
+      // that's the smudge in the small-map screenshot this replaces.
+      minZoom = fit.zoom;
+    }
+
+    // Like computeFit(), but frames just the nucleus and its first ring of
+    // branches — the boot view and the "Reset view" target. Depends on
+    // fit.zoom (computed above) as its lower bound, so it never ends up
+    // looser than the full-map view.
+    function computeHome() {
+      if (!all.length) return;
+
+      var sidePad = vw < 700 ? 14 : 44;
+      var topPad = 76;
+      var bottomPad = 68;
+      var availW = Math.max(120, vw - sidePad * 2);
+      var availH = Math.max(120, vh - topPad - bottomPad);
+      var labelWeight = vw < 700 ? 0.5 : 1;
+      var homeNodes = all.filter(function (n) {
+        return n.depth <= 1;
+      });
+
+      var z = 1;
+      for (var i = 0; i < 6; i++) {
+        var b = boundsAtZoom(z, labelWeight, homeNodes);
+        var next = clamp(
+          Math.min(availW / (b.maxX - b.minX), availH / (b.maxY - b.minY)),
+          minZoom,
+          ZOOM_MAX
+        );
+        if (Math.abs(next - z) < 0.004) {
+          z = next;
+          break;
+        }
+        z = next;
+      }
+      // Centre on the nucleus itself (world origin), not the bounding box
+      // of the ring — a bbox centre drifts off-centre whenever one branch's
+      // labels are longer than the others. Also back off the tight fit a
+      // touch so the ring isn't crowding the edges on load/reset.
+      home = {
+        x: 0,
+        y: 0,
+        zoom: clamp(z * 0.82, minZoom, ZOOM_MAX),
       };
     }
 
@@ -349,7 +422,7 @@ window.Graph = (function () {
 
     function zoomAt(sx, sy, factor) {
       var before = toWorld(sx, sy);
-      cam.zoom = clamp(cam.zoom * factor, ZOOM_MIN, ZOOM_MAX);
+      cam.zoom = clamp(cam.zoom * factor, minZoom, ZOOM_MAX);
       var after = toWorld(sx, sy);
       cam.x += before.x - after.x;
       cam.y += before.y - after.y;
@@ -470,22 +543,33 @@ window.Graph = (function () {
         ctx.beginPath();
         ctx.arc(p.x, p.y, r, 0, TAU);
 
+        // A soft drop shadow marks a circle as clickable content — flat dots
+        // are structural labels, raised circles open something.
         if (n.depth <= 1) {
+          if (n.hasBody) {
+            ctx.save();
+            ctx.shadowColor = "rgba(23,23,26,0.16)";
+            ctx.shadowBlur = 10 * clamp(cam.zoom, 0.6, 1.3);
+            ctx.shadowOffsetY = 3 * clamp(cam.zoom, 0.6, 1.3);
+          }
           ctx.fillStyle = "#ffffff";
           ctx.fill();
+          if (n.hasBody) ctx.restore();
           ctx.lineWidth = (n.depth === 0 ? 2.6 : 2) * clamp(cam.zoom, 0.6, 1.5);
           ctx.strokeStyle = n.depth === 0 ? "#17171a" : n.color;
           ctx.stroke();
         } else if (n.hasBody) {
+          ctx.save();
+          ctx.shadowColor = "rgba(23,23,26,0.16)";
+          ctx.shadowBlur = 10 * clamp(cam.zoom, 0.6, 1.3);
+          ctx.shadowOffsetY = 3 * clamp(cam.zoom, 0.6, 1.3);
           ctx.fillStyle = "#ffffff";
           ctx.fill();
+          ctx.restore();
           ctx.lineWidth = 2.2 * clamp(cam.zoom, 0.6, 1.5);
           ctx.strokeStyle = n.color;
           ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, Math.max(2, r * 0.34), 0, TAU);
-          ctx.fillStyle = n.color;
-          ctx.fill();
+          drawNodeIcon(ctx, p.x, p.y, r, n.color);
         } else {
           ctx.fillStyle = n.color;
           ctx.fill();
@@ -497,13 +581,93 @@ window.Graph = (function () {
         ctx.textBaseline = "middle";
 
         if (n.depth === 0) {
-          ctx.font = "700 " + 17 * ls + "px " + FONT;
           ctx.textAlign = "center";
-          drawLines(wrapLines(n.title, 112 * cam.zoom), p.x, p.y, 19 * ls);
+          var titleFont = "700 " + 28 * ls + "px " + FONT;
+          var subFont = "600 " + 17 * ls + "px " + FONT;
+
+          ctx.font = titleFont;
+          var titleLines = wrapLines(n.title, 150 * cam.zoom);
+
+          // Fade the role subtitle and the icon in/out by the circle's
+          // actual on-screen room, not raw zoom — that's what determines
+          // whether they fit. The icon needs a bit more room than the
+          // subtitle, so it appears just after.
+          var subAlpha = n.tag ? clamp((r - 62) / 26, 0, 1) : 0;
+          var d0IconAlpha = n.hasBody ? clamp((r - 66) / 20, 0, 1) : 0;
+          var subLines = [];
+          if (subAlpha > 0.01) {
+            ctx.font = subFont;
+            // Break on the tag's own "part · part" structure instead of
+            // wrapping by measured width — a fixed, deliberate line break
+            // can't overflow the way width-based wrapping did right at the
+            // edge of a line.
+            var subWidth = 210 * cam.zoom;
+            n.tag.split(" · ").forEach(function (part) {
+              subLines = subLines.concat(wrapLines(part, subWidth));
+            });
+          }
+
+          // Centre the title+subtitle+icon block as one unit, with real
+          // gaps between the parts, instead of independently-placed lines.
+          var titleLH = 34 * ls;
+          var subLH = 22 * ls;
+          var d0IconR = 30 * ls;
+          var d0IconH = 25 * ls;
+          var gap1 = subLines.length ? 18 * ls : 0;
+          var gap2 = d0IconAlpha > 0.01 ? 14 * ls : 0;
+          var titleBlockH = titleLines.length * titleLH;
+          var subBlockH = subLines.length * subLH;
+          var iconBlockH = d0IconAlpha > 0.01 ? d0IconH : 0;
+          var blockTop = p.y - (titleBlockH + gap1 + subBlockH + gap2 + iconBlockH) / 2;
+          var titleCenter = blockTop + titleBlockH / 2;
+
+          ctx.font = titleFont;
+          ctx.fillStyle = "#17171a";
+          drawLines(titleLines, p.x, titleCenter, titleLH);
+
+          if (subLines.length) {
+            var subCenter = blockTop + titleBlockH + gap1 + subBlockH / 2;
+            var baseAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = baseAlpha * subAlpha;
+            ctx.font = subFont;
+            ctx.fillStyle = "#6b6b74";
+            drawLines(subLines, p.x, subCenter, subLH);
+            ctx.globalAlpha = baseAlpha;
+            ctx.fillStyle = "#17171a";
+          }
+
+          if (d0IconAlpha > 0.01) {
+            var d0IconCy = blockTop + titleBlockH + gap1 + subBlockH + gap2 + iconBlockH / 2;
+            var d0BaseAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = d0BaseAlpha * d0IconAlpha;
+            drawNodeIcon(ctx, p.x, d0IconCy, d0IconR, n.color);
+            ctx.globalAlpha = d0BaseAlpha;
+          }
         } else if (n.depth === 1) {
-          ctx.font = "600 " + 15 * ls + "px " + FONT;
           ctx.textAlign = "center";
-          drawLines(wrapLines(n.title, 84 * cam.zoom), p.x, p.y, 17 * ls);
+          ctx.font = "600 " + 18 * ls + "px " + FONT;
+          var d1Lines = wrapLines(n.title, 100 * cam.zoom);
+          var d1LH = 21 * ls;
+
+          // Same "fade by on-screen room" rule as the nucleus subtitle —
+          // the icon backs off before it could crowd/overflow the circle.
+          var iconAlpha = n.hasBody ? clamp((r - 46) / 20, 0, 1) : 0;
+          var d1IconR = 19 * ls;
+          var d1IconH = 16 * ls;
+          var d1Gap = iconAlpha > 0.01 ? 9 * ls : 0;
+          var d1TitleH = d1Lines.length * d1LH;
+          var d1BlockH = d1TitleH + d1Gap + (iconAlpha > 0.01 ? d1IconH : 0);
+          var d1BlockTop = p.y - d1BlockH / 2;
+
+          drawLines(d1Lines, p.x, d1BlockTop + d1TitleH / 2, d1LH);
+
+          if (iconAlpha > 0.01) {
+            var d1IconCy = d1BlockTop + d1TitleH + d1Gap + d1IconH / 2;
+            var d1BaseAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = d1BaseAlpha * iconAlpha;
+            drawNodeIcon(ctx, p.x, d1IconCy, d1IconR, n.color);
+            ctx.globalAlpha = d1BaseAlpha;
+          }
         } else {
           var deep = n.depth >= 3;
           if (deep && cam.zoom < 0.32) {
@@ -710,17 +874,17 @@ window.Graph = (function () {
       init: function (nodes) {
         build(nodes);
         resize();
-        cam = { x: fit.x, y: fit.y, zoom: fit.zoom };
+        cam = { x: home.x, y: home.y, zoom: home.zoom };
         running = true;
         requestAnimationFrame(frame);
       },
       resize: function () {
-        var wasFit =
-          Math.abs(cam.zoom - fit.zoom) < 0.001 &&
-          Math.abs(cam.x - fit.x) < 1 &&
-          Math.abs(cam.y - fit.y) < 1;
+        var wasHome =
+          Math.abs(cam.zoom - home.zoom) < 0.001 &&
+          Math.abs(cam.x - home.x) < 1 &&
+          Math.abs(cam.y - home.y) < 1;
         resize();
-        if (wasFit) cam = { x: fit.x, y: fit.y, zoom: fit.zoom };
+        if (wasHome) cam = { x: home.x, y: home.y, zoom: home.zoom };
       },
       get: function (id) {
         return byId[id] || null;
@@ -735,7 +899,7 @@ window.Graph = (function () {
           return;
         }
         animateTo(
-          { x: n.bx, y: n.by, zoom: clamp(Math.max(cam.zoom, 0.95), ZOOM_MIN, 1.6) },
+          { x: n.bx, y: n.by, zoom: clamp(Math.max(cam.zoom, 0.95), minZoom, 1.6) },
           done
         );
       },
@@ -746,7 +910,7 @@ window.Graph = (function () {
         focusRing = id ? byId[id] || null : null;
       },
       reset: function (done) {
-        animateTo({ x: fit.x, y: fit.y, zoom: fit.zoom }, done);
+        animateTo({ x: home.x, y: home.y, zoom: home.zoom }, done);
       },
       zoomBy: function (factor) {
         flight = null;

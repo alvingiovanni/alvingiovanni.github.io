@@ -74,6 +74,7 @@
           onHover: function () {},
         });
         graph.init(nodes);
+        el.canvas.setAttribute("data-ready", "true");
 
         buildSrNav();
         buildTextView();

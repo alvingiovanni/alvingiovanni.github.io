@@ -1,6 +1,6 @@
 ---
 title: Marketing Channel Affinity
-order: 2
+order: 3
 tag: Tokopedia (Bytedance) · 2021–2024
 metric: +20%
 metric-label: Conversion uplift

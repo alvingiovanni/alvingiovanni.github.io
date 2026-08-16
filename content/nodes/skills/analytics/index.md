@@ -1,4 +1,4 @@
 ---
-title: Analytics & Growth
+title: Data Analytics
 order: 1
 ---

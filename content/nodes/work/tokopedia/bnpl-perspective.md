@@ -1,6 +1,6 @@
 ---
 title: What Makes BNPL Succeed
-order: 1
+order: 2
 tag: Perspective · Fintech / BNPL
 metric: 5
 metric-label: Factors that decide it

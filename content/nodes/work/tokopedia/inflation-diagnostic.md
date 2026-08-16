@@ -1,6 +1,6 @@
 ---
 title: Inflation & Market Diagnostic
-order: 3
+order: 1
 tag: Tokopedia (Bytedance) · 2021–2024
 metric: ~30%
 metric-label: Revenue uplift in targeted verticals

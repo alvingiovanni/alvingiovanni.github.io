@@ -1,0 +1,28 @@
+{
+  "//": "THE LIST OF NODES. To add a node: create a file in content/nodes/ and add its filename to this list. Lines starting with // are ignored, so you can leave yourself notes.",
+
+  "nodes": [
+    "alvin.md",
+
+    // -- the five main branches --
+    "work.md",
+    "skills.md",
+    "values.md",
+    "story.md",
+    "leisure.md",
+
+    // -- case studies (branch off work.md) --
+    "segmentation.md",
+    "channel-affinity.md",
+    "inflation-diagnostic.md",
+    "ltv-cac.md",
+    "bnpl-perspective.md",
+
+    // -- skill groups (branch off skills.md) --
+    "analytics.md",
+    "programming.md",
+    "bi.md",
+    "ai.md",
+    "leadership.md"
+  ]
+}

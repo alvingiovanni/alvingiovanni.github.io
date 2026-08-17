@@ -790,6 +790,7 @@
   function renderTextSection(item) {
     var n = item.node;
     var headingLevel = Math.min(6, item.depth + 1);
+    var nodeHierarchy = n.id === "skills" ? renderSkillHierarchy(n) : "";
     var path = item.ancestors.length
       ? '<p class="text-section-path">' +
         item.ancestors
@@ -811,10 +812,56 @@
           escapeHtml(n.metricLabel) + "</p>"
         : "") +
       '<div class="prose">' + renderIndexBody(n.body, item.depth) + "</div>" +
+      nodeHierarchy +
       (item.children.length
         ? '<div class="text-section-children">' + item.children.map(renderTextSection).join("") + "</div>"
         : "") +
       "</section>"
+    );
+  }
+
+  function renderSkillHierarchy(skillRoot) {
+    var children = Object.create(null);
+    nodes.forEach(function (node) {
+      if (!node.parent) return;
+      (children[node.parent] = children[node.parent] || []).push(node);
+    });
+
+    function renderSkillItems(parentId) {
+      var items = children[parentId] || [];
+      if (!items.length) return "";
+      return (
+        '<ul class="skill-tree">' +
+        items
+          .map(function (node) {
+            return (
+              '<li><span class="skill-name">' + escapeHtml(node.title) + "</span>" +
+              renderSkillItems(node.id) +
+              "</li>"
+            );
+          })
+          .join("") +
+        "</ul>"
+      );
+    }
+
+    var groups = children[skillRoot.id] || [];
+    if (!groups.length) return "";
+    return (
+      '<div class="skill-hierarchy" aria-label="Skills by category">' +
+      groups
+        .map(function (group) {
+          return (
+            '<section class="skill-group" style="--skill-color:' +
+            (group.color || skillRoot.color || "#1d1d1f") + '">' +
+            '<h3><span class="skill-group-node" aria-hidden="true"></span>' +
+            escapeHtml(group.title) + "</h3>" +
+            renderSkillItems(group.id) +
+            "</section>"
+          );
+        })
+        .join("") +
+      "</div>"
     );
   }
 

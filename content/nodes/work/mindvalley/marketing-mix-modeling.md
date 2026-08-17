@@ -1,6 +1,6 @@
 ---
 title: Marketing Mix Modeling
-order: 2
+order: 3
 tag: Mindvalley · 2026
 metric: 1.12×
 metric-label: Marketing efficiency ratio

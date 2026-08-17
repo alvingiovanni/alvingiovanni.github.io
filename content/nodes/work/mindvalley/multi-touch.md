@@ -1,6 +1,6 @@
 ---
 title: Multi-Touch Marketing Attribution
-order: 1
+order: 2
 tag: Mindvalley · 2024–Present
 metric: ~20%
 metric-label: Channel revenue increase

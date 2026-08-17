@@ -1,9 +1,9 @@
 ---
 title: Marketing Data Foundation
-order: 6
+order: 1
 tag: Mindvalley · 2024–2026
-metric: 7
-metric-label: Lead sources unified
+metric:
+metric-label:
 ---
 ## Problem
 

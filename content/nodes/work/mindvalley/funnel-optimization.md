@@ -1,6 +1,6 @@
 ---
 title: Funnel Optimization
-order: 3
+order: 4
 tag: Mindvalley · 2026
 metric: 1.12×
 metric-label: Funnel efficiency

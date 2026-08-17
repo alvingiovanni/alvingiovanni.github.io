@@ -1,6 +1,6 @@
 ---
 title: Lead Scoring Model
-order: 5
+order: 6
 tag: Mindvalley · 2024–Present
 metric: 2.9×
 metric-label: Advertising conversion rate

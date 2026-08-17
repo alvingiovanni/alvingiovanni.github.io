@@ -1,6 +1,6 @@
 ---
 title: LTV Forecasting & CAC Guardrails
-order: 4
+order: 5
 tag: Mindvalley · 2026
 metric: 1.22×
 metric-label: 90-day LTV growth

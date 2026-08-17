@@ -13,14 +13,23 @@ window.Markdown = (function () {
 
   // ```chart
   // type: column
-  // title: Marketing Engagement Uplift
-  // y-label: Marketing engagement
-  // note: illustrative, relative to a baseline of 1×
-  // Before: 1×
-  // After: 1.26×
+  // title: Promo tier mix after scoring
+  // y-label: Share of eligible users
+  // unit: %            ← suffix on the y-axis ticks; defaults to ×, `unit:` alone clears it
+  // note: optional caveat printed under the plot
+  // Tier 1: 12%
+  // Tier 2: 23%
   // ```
   function parseChart(src) {
-    var cfg = { type: "bar", title: "", yLabel: "", note: "", max: null, points: [] };
+    var cfg = {
+      type: "bar",
+      title: "",
+      yLabel: "",
+      note: "",
+      unit: "×",
+      max: null,
+      points: [],
+    };
     src.split("\n").forEach(function (raw) {
       var line = raw.trim();
       if (!line || line.indexOf(":") === -1) return;
@@ -32,6 +41,7 @@ window.Markdown = (function () {
       else if (lower === "title") cfg.title = val;
       else if (lower === "y-label") cfg.yLabel = val;
       else if (lower === "note") cfg.note = val;
+      else if (lower === "unit") cfg.unit = val;
       else if (lower === "max") cfg.max = parseFloat(val);
       else {
         var num = parseFloat(val.replace(/[^0-9.\-]/g, ""));
@@ -127,7 +137,7 @@ window.Markdown = (function () {
         .map(function (_, i) {
           var tickValue = i * niceStep;
           var y = columnTop + plotH - (tickValue / columnMax) * plotH;
-          var tickLabel = String(parseFloat(tickValue.toFixed(4))) + "×";
+          var tickLabel = String(parseFloat(tickValue.toFixed(4))) + cfg.unit;
           return (
             '<line x1="' + columnLeft + '" y1="' + y.toFixed(1) + '" x2="' +
             (columnW - columnRight) + '" y2="' + y.toFixed(1) +

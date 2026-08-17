@@ -1,44 +1,33 @@
 ---
-title: LTV/CAC Forecasting & Attribution
-order: 1
-tag: Mindvalley · 2024–Present
-metric: ~20%
-metric-label: Channel revenue increase
+title: LTV Forecasting & CAC Guardrails
+order: 4
+tag: Mindvalley · 2026
+metric: 1.22×
+metric-label: 90-day LTV growth
 ---
 ## Problem
 
-Marketing investment decisions were being made channel-by-channel, without a consistent view
-of what a customer was actually worth over time, or which channels were under- or over-funded
-relative to their real contribution to growth.
+Capital-allocation, funnel-funding, and pricing decisions were being made without a **consistent lifetime-value figure**. Different teams calculated LTV differently, making it difficult to establish reliable CAC guardrails and payback thresholds.
+
+The business also lacked a consistent view of unit economics across funnels and regions. Pricing proposals did not always account for how conversion rates could change at a new price point, making projected profitability difficult to compare accurately.
 
 ## Solution
 
-Built an LTV forecasting model that established CAC guardrails and payback thresholds for paid
-acquisition, then led design of a multi-touch attribution framework paired with a Marketing Mix
-Model (MMM) to see true incremental channel contribution instead of last-click credit.
-Partnered directly with C-suite executives to translate the output into acquisition,
-lifecycle, and investment decisions, and worked with the data engineering team to keep the
-underlying metrics consistent for executive reporting.
+Established a **single LTV definition** and automated its reporting across business units, including a dedicated Finance view.
+
+Extended the framework to compare LTV and CAC by funnel and region. The analysis also calculated value per lead for leads that did not convert, creating a consistent basis for setting CAC ceilings, evaluating payback periods, and allocating marketing budgets.
+
+Built a reusable price-change framework that projected revenue, LTV, and profitability while accounting for **conversion-rate movement at the new price**. This prevented price increases from appearing more profitable than their expected customer response supported.
 
 ## Impact
 
-- ~5% improvement in marketing profitability from better capital allocation against CAC/payback guardrails
-- ~20% revenue increase in channels that attribution revealed had been underinvested
+- Increased 90-day LTV growth to 1.11× its starting level across two consecutive quarters
+- Improved overall profitability by ~5%
 
 ```chart
 type: column
-title: ~5% Marketing Profitability Improvement Signaling Better Capital Allocation
-y-label: Marketing profitability
-note: Illustrative — shown relative to a baseline of 1×, reflecting the ~5% marketing profitability improvement reported above.
-Before: 1×
-After: 1.05×
-```
-
-```chart
-type: column
-title: ~20% Channel Revenue Increase Signaling Previously Underinvested Growth
-y-label: Channel revenue
-note: Illustrative — shown relative to a baseline of 1×, reflecting the ~20% channel revenue increase reported above.
-Before: 1×
-After: 1.20×
+title: 90-day LTV growth
+y-label: Indexed LTV growth
+before: 1×
+after: 1.11×
 ```

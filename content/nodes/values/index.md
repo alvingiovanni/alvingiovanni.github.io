@@ -4,10 +4,8 @@ order: 3
 color: orange
 ---
 
-I'd rather ship a framework that outlives one campaign than a one-off analysis that answers
-today's question and nothing else — most of what I'm proud of (measurement frameworks,
-segmentation models, scoring systems) is still running long after I built it.
+I am naturally drawn to problems I believe I can help solve. It does not come from feeling responsible for fixing everything. **Contributing feels natural** when I have something useful to offer.
 
-I like getting from data to a decision fast, and I care more about a team understanding the
-"why" behind a number than about being the only person who can produce it — which is probably
-why mentorship keeps showing up in how I work.
+Many of my principles come back to the Golden Rule: treat others as I would want to be treated. I also read it in reverse. If I know how painful an experience feels, **I should not pass that experience on** to someone else.
+
+In practice, this means building trust before offering help, finding an effective path before optimizing it, making honesty safe, and treating everyone with the same basic respect.

@@ -1,4 +1,4 @@
 ---
 title: Leadership
-order: 5
+order: 2
 ---

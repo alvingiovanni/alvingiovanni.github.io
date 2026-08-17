@@ -7,37 +7,33 @@ metric-label: Conversion uplift
 ---
 ## Problem
 
-This is an effeciency problem that also tackles over-marketing concerns.
-Marketing had a long list of channels: push, email, WhatsApp, social, and many more.
-However, each of these marketing channel have different costs and are effective to different users.
-Users were often reached across several channels for the same message, which was both expensive and a poor experience.
+Marketing campaigns used a wide range of channels, including push notifications, email, WhatsApp, and social media. Each channel had a different cost and performed differently across users.
+
+Users were often sent the same message through several channels, increasing marketing costs and contributing to **overmarketing and a poor user experience**. The team needed a way to identify which channel was most effective for each user.
 
 ## Solution
 
-Development of a Media Acquisition Channel-Affinity Model
-Using simple framework based off RFM scoring, creatinga spin-off variant framework called RFE (Recency–Frequency–Engagement).
-Replacing "monetary" for "engagement", to rank each user's channel preference and route campaigns to
-the single cheapest, highest-affinity channel they were likely to respond to.
+Developed a **channel-affinity model** based on an adaptation of RFM scoring. The resulting RFE framework replaced monetary value with engagement, ranking each user’s channel preferences using recency, frequency, and engagement.
+
+Campaigns could then be routed through the **lowest-cost, highest-affinity channel** that each user was likely to respond to. This reduced redundant outreach while directing marketing spend toward more effective user-channel combinations.
 
 ## Impact
 
 - 12% reduction in marketing spend
-- 20% uplift in conversion rate across the board
+- 20% uplift in conversion rate
 
 ```chart
 type: column
-title: +20% Conversion Rate Across All Channels Signaling Effectiveness Improvement
-y-label: Conversion Rate
-note: Illustrative — shown relative to a baseline of 1×, reflecting the 20% conversion uplift reported above.
+title: Conversion rate uplift
+y-label: Conversion rate
 Before: 1×
 After: 1.20×
 ```
 
 ```chart
 type: column
-title: 12% Marketing Cost Reduction Signaling Effeciency Improvement
-y-label: Marketing Cost
-note: Illustrative — shown relative to a baseline of 1×, reflecting the 12% marketing cost reduction.
+title: Marketing cost reduction
+y-label: Marketing cost
 Before: 1×
 After: 0.88×
 ```

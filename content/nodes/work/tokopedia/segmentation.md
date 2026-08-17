@@ -1,56 +1,38 @@
 ---
-title: Segmentation & Propensity Scoring
-order: 4
+title: User Persona
+order: 3
 tag: Tokopedia (Bytedance) · 2021–2024
 metric: +26%
-metric-label: Engagement uplift
+metric-label: Revenue uplift
 ---
 ## Problem
 
-Marketing sent the same message to every user on the list. Some users only showed up during
-promotions. Some were managing a monthly budget, splitting purchases to fit it. Others were
-saving up for one big-ticket purchase. The transaction data already showed these differences.
-Nothing translated it into something a marketer could act on.
+BNPL is a highly competitive category, with little differentiation between products. To strengthen its market position, the team needed to revisit who the product was really (ICP) for and how it could better serve that audience.
+
+The working hypothesis was that the ideal customer uses BNPL primarily for aspirational spending. This initiative focused on validating that assumption and exploring how greater personalization could create a more differentiated product experience
 
 ## Solution
 
-Led a cross-functional team of analysts to group users into behavioral personas based on how
-they shopped: how much they spent, how often they ordered, how much they relied on promotions,
-and whether their purchases were everyday essentials or one-off wants. Each user's transaction
-history was also checked for a repeating rhythm versus random, one-off activity, to tell habitual
-shoppers apart from opportunistic ones. A companion scoring system ranked those same behaviors by
-how well they predicted a purchase, combined them into a single score per user, and used that
-score to place each user into a tier for campaign targeting.
+I led a cross-functional team of analysts to build a **machine learning clustering model** that segmented users into behavioral personas based on how they used BNPL.
+
+The segmentation was driven by two key engineered features:
+
+1. **Purchase need state** — classifying transactions as primary needs vs. secondary needs, or broadly  **essentials vs. aspirational spending** , informed by Maslow’s hierarchy of needs.
+2. **Purchase frequency** — identifying whether spending behavior was primarily  **one-off or recurring** .
+
+Using these behavioral dimensions alongside transaction data, the model identified  **five distinct user personas** , each with different spending patterns, motivations, and needs from BNPL.
+
+These personas became the foundation for a  **personalization framework across Product, Marketing, and Business teams** . Experiences, messaging, campaigns, and offers could be tailored to each persona, creating a more relevant product experience designed to increase  **user engagement and transaction activity** .
 
 ## Impact
 
-- +26% uplift in marketing engagement
-- +17% increase in daily transacting users
-- +21% lift in core product activity
+- +26% uplift in revenue
+- +25% to 85% of comms and marketing effort depends on persona
 
 ```chart
 type: column
-title: +26% Marketing Engagement Uplift Signaling Personalization Effectiveness
-y-label: Marketing engagement
-note: Illustrative — shown relative to a baseline of 1×, reflecting the +26% engagement uplift reported above.
+title: +26% Revenue Uplift Signaling Stronger Offer
+y-label: Revenue
 Before: 1×
 After: 1.26×
-```
-
-```chart
-type: column
-title: +17% Daily Transacting User Increase Signaling Stronger Targeting
-y-label: Daily transacting users
-note: Illustrative — shown relative to a baseline of 1×, reflecting the +17% increase in daily transacting users reported above.
-Before: 1×
-After: 1.17×
-```
-
-```chart
-type: column
-title: +21% Core Product Activity Lift Signaling Broader Engagement
-y-label: Core product activity
-note: Illustrative — shown relative to a baseline of 1×, reflecting the +21% lift in core product activity reported above.
-Before: 1×
-After: 1.21×
 ```

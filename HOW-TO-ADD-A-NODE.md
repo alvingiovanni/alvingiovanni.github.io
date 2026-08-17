@@ -146,19 +146,48 @@ Normal paragraph. **Bold**, *italic*, and [a link](https://example.com).
 ````markdown
 ```chart
 type: column
-title: Marketing Engagement Uplift
-y-label: Marketing engagement
-note: Illustrative — shown relative to a baseline of 1×. Not actual figures.
-Before: 1×
-After: 1.26×
+title: Promo tier mix after scoring
+y-label: Share of eligible users
+unit: %
+Tier 1: 12%
+Tier 2: 23%
+Tier 3: 31%
+Tier 4: 34%
 ```
 ````
 
 Every line that looks like `Name: number` becomes a column. `title:` adds the
 heading above the plot, and `y-label:` names the metric on the vertical axis.
-`type: bar` draws a horizontal bar chart, while `type: line` draws a line chart.
-`note:` prints the small grey disclaimer underneath. Charts automatically use
-the circle's own colour; a column named `Before` uses neutral grey.
+`unit:` sets what gets printed after each number on the vertical axis — use
+`unit: %` for percentages and shares, or leave the value blank for plain
+numbers. `type: bar` draws a horizontal bar chart, while `type: line` draws a
+line chart. `note:` prints a small grey caption underneath, for when the numbers
+need a word of explanation (what period, what was counted). Charts automatically
+use the circle's own colour; a column named `Before` uses neutral grey.
+
+**The usual chart is a before/after pair, one per result.** Each number in
+**Impact** gets its own little chart underneath, showing where the metric
+started and where it ended up. The bars are indexed, meaning `Before` is always
+`1×` and `After` is the same result written as a multiplier: a 26% uplift is
+`1.26×`, a 12% reduction is `0.88×`, a 2.9× improvement is `2.90×`. Leave `unit:`
+out on these, and always keep a `note:` line saying the chart is illustrative
+and shown against a 1× baseline. That note is what makes it honest, since the
+real underlying numbers stay private:
+
+```
+Before: 1×
+After: 1.26×
+```
+
+**If you have a real set of numbers, chart those too.** A split across groups, a
+mix of categories, a trend across months. Those are more interesting than an
+indexed pair, so use them where you have them, with `unit: %` and a plain title.
+Keep percentages and shares, not currency amounts or user counts — see the
+confidentiality note at the end of this file.
+
+**Only chart numbers you actually have.** Restating a result you measured as a
+before/after pair is fine. Guessing at a number, or inventing extra categories
+to make a chart look fuller, is not.
 
 **An image:** drop the file into `assets/img/`, then:
 
@@ -240,5 +269,6 @@ Everything else keeps working while you fix it.
 This repository is **public**. The case study text is deliberately limited to the
 same percentage figures that already appear on your resume — no currency
 amounts, no user counts, no internal document names or ticket numbers, no
-colleague or partner names. Charts are illustrative and indexed, never real data
-exports. Keep new nodes to that same standard.
+colleague or partner names. Charts follow the same rule: percentages, shares, and
+index numbers are fine, absolute figures are not. Keep new nodes to that same
+standard.

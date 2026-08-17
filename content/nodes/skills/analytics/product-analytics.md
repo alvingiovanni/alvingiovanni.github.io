@@ -1,4 +1,4 @@
 ---
 title: Product Analytics
-order: 1
+order: 3
 ---

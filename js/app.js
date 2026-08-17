@@ -791,6 +791,7 @@
     var n = item.node;
     var headingLevel = Math.min(6, item.depth + 1);
     var nodeHierarchy = n.id === "skills" ? renderSkillHierarchy(n) : "";
+    var indexBody = n.id === "skills" ? "" : renderIndexBody(n.body, item.depth);
     var path = item.ancestors.length
       ? '<p class="text-section-path">' +
         item.ancestors
@@ -811,7 +812,7 @@
         ? '<p class="text-metric"><strong>' + escapeHtml(n.metric) + "</strong> " +
           escapeHtml(n.metricLabel) + "</p>"
         : "") +
-      '<div class="prose">' + renderIndexBody(n.body, item.depth) + "</div>" +
+      '<div class="prose">' + indexBody + "</div>" +
       nodeHierarchy +
       (item.children.length
         ? '<div class="text-section-children">' + item.children.map(renderTextSection).join("") + "</div>"

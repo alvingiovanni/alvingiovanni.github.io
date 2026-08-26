@@ -168,15 +168,17 @@ use the circle's own colour; a column named `Before` uses neutral grey.
 **The usual chart is a before/after pair, one per result.** Each number in
 **Impact** gets its own little chart underneath, showing where the metric
 started and where it ended up. The bars are indexed, meaning `Before` is always
-`1×` and `After` is the same result written as a multiplier: a 26% uplift is
-`1.26×`, a 12% reduction is `0.88×`, a 2.9× improvement is `2.90×`. Leave `unit:`
-out on these, and always keep a `note:` line saying the chart is illustrative
-and shown against a 1× baseline. That note is what makes it honest, since the
-real underlying numbers stay private:
+`100%` and `After` is the indexed result: a 26% increase is `126%`, a 12%
+reduction is `88%`, and a 190% increase is `290%`. Use `unit: %` and always keep
+a `note:` line saying that the values are indexed to a 100% baseline. That note
+is what makes the comparison honest, since the real underlying numbers stay
+private:
 
 ```
-Before: 1×
-After: 1.26×
+unit: %
+Before: 100%
+After: 126%
+note: Values are indexed to a 100% baseline.
 ```
 
 **If you have a real set of numbers, chart those too.** A split across groups, a

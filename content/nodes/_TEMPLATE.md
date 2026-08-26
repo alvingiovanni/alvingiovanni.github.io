@@ -26,17 +26,19 @@ Lead with the results as a bullet list, one line per number:
 - First measurable result
 - Second measurable result
 
-Then give each result its own chart. `Before` is always `1×`, and `After` is that
-same result written as a multiplier (a 26% uplift is `1.26×`, a 12% reduction is
-`0.88×`). Keep the `note:` line, which is what tells the reader the bars are
-illustrative:
+Then give each result its own chart. `Before` is always `100%`, and `After` is
+the indexed result (a 26% increase is `126%`, while a 12% reduction is `88%`).
+Keep the `note:` line, which explains that the values are indexed rather than
+absolute:
 
 ```chart
 type: column
-title: +26% Revenue Uplift Signaling Stronger Offer
-y-label: Revenue
-Before: 1×
-After: 1.26×
+title: 26% increase in revenue
+y-label: Revenue index
+unit: %
+Before: 100%
+After: 126%
+note: Values are indexed to a 100% baseline.
 ```
 
 If you have a real set of numbers instead (a split across groups, a mix of

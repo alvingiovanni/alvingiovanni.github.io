@@ -1,6 +1,6 @@
 ---
 title: Alvin Giovanni
-tag: Growth & Product Analytics
+tag: Senior Data Analyst
 color: green
 ---
 I’m a growth and product analytics professional with over 5 years of experience helping businesses turn data into better strategic decisions and measurable growth. My work sits at the intersection of analytics, product, marketing, and commercial strategy, where I translate complex data into actionable insights for senior leadership and cross-functional teams.

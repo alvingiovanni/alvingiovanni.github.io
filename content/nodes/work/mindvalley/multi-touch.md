@@ -19,12 +19,14 @@ This provided a more objective view of each channel’s revenue contribution and
 
 ## Impact
 
-- ~20% revenue increase across channels identified as underinvested
+- Increased revenue by approximately 20% across channels identified as underinvested
 
 ```chart
 type: column
-title: Revenue increase in previously underinvested channels
-y-label: Channel revenue
-Before: 1×
-After: 1.20×
+title: Approximately 20% increase in underinvested-channel revenue
+y-label: Channel revenue index
+unit: %
+Before: 100%
+After: 120%
+note: Values are indexed to a 100% baseline.
 ```

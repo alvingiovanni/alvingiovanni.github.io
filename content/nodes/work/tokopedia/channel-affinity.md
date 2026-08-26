@@ -3,7 +3,7 @@ title: Marketing Channel Affinity
 order: 3
 tag: Tokopedia (Bytedance) · 2021–2024
 metric: +20%
-metric-label: Conversion uplift
+metric-label: Conversion increase
 ---
 ## Problem
 
@@ -19,21 +19,25 @@ Campaigns could then be routed through the **lowest-cost, highest-affinity chann
 
 ## Impact
 
-- 12% reduction in marketing spend
-- 20% uplift in conversion rate
+- Reduced marketing spend by 12%
+- Increased conversion rate by 20%
 
 ```chart
 type: column
-title: Conversion rate uplift
-y-label: Conversion rate
-Before: 1×
-After: 1.20×
+title: 20% increase in conversion rate
+y-label: Conversion rate index
+unit: %
+Before: 100%
+After: 120%
+note: Values are indexed to a 100% baseline.
 ```
 
 ```chart
 type: column
-title: Marketing cost reduction
-y-label: Marketing cost
-Before: 1×
-After: 0.88×
+title: 12% reduction in marketing spend
+y-label: Marketing spend index
+unit: %
+Before: 100%
+After: 88%
+note: Values are indexed to a 100% baseline.
 ```

@@ -489,7 +489,7 @@ window.Graph = (function () {
 
     /* ----- drawing ----- */
 
-    function drawRadialRings() {
+    function drawRadialRings(ringColor) {
       if (!root) return;
 
       var center = toScreen(root.bx, root.by);
@@ -502,7 +502,7 @@ window.Graph = (function () {
       var ringStep = RADIAL_RING_STEP * cam.zoom;
 
       ctx.save();
-      ctx.strokeStyle = "rgba(96,96,104,0.13)";
+      ctx.strokeStyle = ringColor || "rgba(96,96,104,0.13)";
       ctx.lineWidth = 1;
 
       for (var radius = ringStep; radius <= maxDistance + ringStep; radius += ringStep) {
@@ -612,7 +612,12 @@ window.Graph = (function () {
 
     function draw(now) {
       ctx.clearRect(0, 0, vw, vh);
-      drawRadialRings();
+      var _cs = getComputedStyle(document.documentElement);
+      var _colorSurface = _cs.getPropertyValue("--surface").trim() || "#ffffff";
+      var _colorText = _cs.getPropertyValue("--text").trim() || "#1d1d1f";
+      var _colorMuted = _cs.getPropertyValue("--text-muted").trim() || "#68686f";
+      var _colorRing = _cs.getPropertyValue("--ring-stroke").trim() || "rgba(96,96,104,0.13)";
+      drawRadialRings(_colorRing);
 
       var pauseAll = dragging || now < motionPauseUntil;
       var pausedNodes = pausedMotionNodes();
@@ -691,7 +696,7 @@ window.Graph = (function () {
             ctx.shadowBlur = 16 * clamp(cam.zoom, 0.6, 1.3);
             ctx.shadowOffsetY = 4 * clamp(cam.zoom, 0.6, 1.3);
           }
-          ctx.fillStyle = "#ffffff";
+          ctx.fillStyle = _colorSurface;
           ctx.fill();
           if (n.hasBody) ctx.restore();
           ctx.lineWidth = (n.depth === 0 ? 2.2 : 1.8) * clamp(cam.zoom, 0.6, 1.5);
@@ -702,7 +707,7 @@ window.Graph = (function () {
           ctx.shadowColor = "rgba(23,23,26,0.1)";
           ctx.shadowBlur = 14 * clamp(cam.zoom, 0.6, 1.3);
           ctx.shadowOffsetY = 3 * clamp(cam.zoom, 0.6, 1.3);
-          ctx.fillStyle = "#ffffff";
+          ctx.fillStyle = _colorSurface;
           ctx.fill();
           ctx.restore();
           ctx.lineWidth = 1.9 * clamp(cam.zoom, 0.6, 1.5);
@@ -716,7 +721,7 @@ window.Graph = (function () {
 
         // Labels: inside the circle for the center and the main branches,
         // outside and pointing away from center for everything else.
-        ctx.fillStyle = "#1d1d1f";
+        ctx.fillStyle = _colorText;
         ctx.textBaseline = "middle";
 
         if (n.depth === 0) {
@@ -733,7 +738,7 @@ window.Graph = (function () {
           var titleCenter = blockTop + nucleus.titleH / 2;
 
           ctx.font = nucleus.titleFont;
-          ctx.fillStyle = "#1d1d1f";
+          ctx.fillStyle = _colorText;
           drawLines(nucleus.titleLines, p.x, titleCenter, nucleus.titleLH);
 
           if (nucleus.subtitleLines.length) {
@@ -741,10 +746,10 @@ window.Graph = (function () {
             var baseAlpha = ctx.globalAlpha;
             ctx.globalAlpha = baseAlpha * subAlpha;
             ctx.font = nucleus.subtitleFont;
-            ctx.fillStyle = "#68686f";
+            ctx.fillStyle = _colorMuted;
             drawLines(nucleus.subtitleLines, p.x, subCenter, nucleus.subtitleLH);
             ctx.globalAlpha = baseAlpha;
-            ctx.fillStyle = "#1d1d1f";
+            ctx.fillStyle = _colorText;
           }
 
           if (d0IconAlpha > 0.01) {

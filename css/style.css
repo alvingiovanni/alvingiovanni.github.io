@@ -11,6 +11,7 @@
   --text: #1d1d1f;
   --text-muted: #68686f;
   --text-faint: #929298;
+  --ring-stroke: rgba(96, 96, 104, 0.13);
 
   /* Node accent colors. These names are what you type as `color:` in a
      node's .md file — see js/app.js COLORS. */
@@ -1135,4 +1136,39 @@ img { max-width: 100%; display: block; }
 /* Fallback for browsers without color-mix() */
 @supports not (background: color-mix(in srgb, red 8%, transparent)) {
   .modal-metric { background: #f6f6f8; border-color: var(--border); }
+}
+
+/* ============================================================
+   Dark mode
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161616;
+    --surface: #242424;
+    --surface-soft: #2c2c2c;
+    --surface-glass: rgba(36, 36, 36, 0.88);
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f5f5f7;
+    --text-muted: #a1a1a6;
+    --text-faint: #6e6e73;
+    --ring-stroke: rgba(180, 180, 186, 0.11);
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 22px 70px rgba(0, 0, 0, 0.4);
+    --shadow-chip: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 28px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Accent colors: slightly lighter for better contrast on dark surfaces */
+  :root {
+    --c-blue: #4d7fe8;
+    --c-purple: #8d72d6;
+    --c-green: #34a088;
+    --c-orange: #d48c35;
+    --c-pink: #d96685;
+    --c-teal: #2fa0a2;
+    --c-slate: #8090a4;
+  }
+
+  /* Invert the modal metric so it reads as a surface, not a hole */
+  .modal-metric { background: color-mix(in srgb, var(--text) 6%, transparent); }
 }

@@ -8,8 +8,10 @@
  *   const graph = Graph.create({ canvas, nodes, onSelect, onHover });
  *   graph.flyTo("segmentation", () => openPanel());
  *
- * `nodes` is a flat array of { id, title, parent, color, hasBody }.
- * The one node without a `parent` becomes the center.
+ * `nodes` is a flat array of { id, title, parent, color, hasBody, featured }.
+ * The one node without a `parent` becomes the center. Featured nodes get a
+ * second, thinner ring. A "lens" (setLens) dims every node outside a set, the
+ * same way hovering dims everything but a node's neighbours.
  */
 window.Graph = (function () {
   var TAU = Math.PI * 2;
@@ -185,6 +187,7 @@ window.Graph = (function () {
     var closingSelection = null;
     var selectionChangedAt = 0;
     var focusRing = null; // keyboard focus, drawn differently from mouse hover
+    var lens = null;      // Set of node ids to keep lit; everything else dims
     var flight = null;
     var motionStartedAt = performance.now();
     var motionPauseUntil = 0;
@@ -204,6 +207,7 @@ window.Graph = (function () {
           parentId: n.parent || null,
           color: n.color,
           hasBody: !!n.hasBody,
+          featured: !!n.featured,
           size: n.size,
           angleOverride: typeof n.angle === "number" ? n.angle : undefined,
           children: [],
@@ -638,6 +642,13 @@ window.Graph = (function () {
         active.children.forEach(function (c) {
           activeSet.add(c);
         });
+      } else if (lens) {
+        // A lens is a way of reading the map by theme: the studies and skills
+        // in the theme (plus the path back to the centre) stay lit.
+        activeSet = new Set();
+        all.forEach(function (n) {
+          if (lens.has(n.id)) activeSet.add(n);
+        });
       }
 
       // Edges first, so nodes sit on top of them.
@@ -714,6 +725,15 @@ window.Graph = (function () {
           ctx.strokeStyle = n.color;
           ctx.stroke();
           drawNodeIcon(ctx, p.x, p.y, r, n.color, iconTurnFor(n, now));
+
+          // Featured work: a second, thinner ring just outside the circle.
+          if (n.featured) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r + 5 * clamp(cam.zoom, 0.6, 1.4), 0, TAU);
+            ctx.lineWidth = 1.1 * clamp(cam.zoom, 0.6, 1.5);
+            ctx.strokeStyle = hexToRgba(n.color, 0.55);
+            ctx.stroke();
+          }
         } else {
           ctx.fillStyle = n.color;
           ctx.fill();
@@ -1042,6 +1062,14 @@ window.Graph = (function () {
       },
       focus: function (id) {
         focusRing = id ? byId[id] || null : null;
+      },
+      // ids: an array/Set of node ids to keep lit, or null to clear the lens.
+      setLens: function (ids) {
+        if (!ids) {
+          lens = null;
+          return;
+        }
+        lens = new Set(Array.from(ids));
       },
       reset: function (done) {
         animateTo({ x: home.x, y: home.y, zoom: home.zoom }, done);

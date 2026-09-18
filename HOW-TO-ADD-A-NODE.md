@@ -97,6 +97,7 @@ work/
 | `metric-label` | Small text next to the big number | No |
 | `angle` | Force a branch to point a direction. `0` = up, `90` = right, `180` = down, `270` = left | No |
 | `size` | `sm` or `lg` to make the circle smaller/bigger | No |
+| `featured` | `true` marks it as selected work: a second ring on the map and a card at the top of the reading view | No |
 | `draft` | `true` hides it from the site without deleting the file | No |
 
 There is **no `parent:` setting** — the folder does that job. If you write one,
@@ -165,31 +166,22 @@ line chart. `note:` prints a small grey caption underneath, for when the numbers
 need a word of explanation (what period, what was counted). Charts automatically
 use the circle's own colour; a column named `Before` uses neutral grey.
 
-**The usual chart is a before/after pair, one per result.** Each number in
-**Impact** gets its own little chart underneath, showing where the metric
-started and where it ended up. The bars are indexed, meaning `Before` is always
-`100%` and `After` is the indexed result: a 26% increase is `126%`, a 12%
-reduction is `88%`, and a 190% increase is `290%`. Use `unit: %` and always keep
-a `note:` line saying that the values are indexed to a 100% baseline. That note
-is what makes the comparison honest, since the real underlying numbers stay
-private:
+**Chart a real set of numbers, not the headline.** The big number at the top
+of a study already says "+26%"; a Before 100% / After 126% bar underneath it
+adds nothing, so the short studies don't carry charts at all. A chart earns its
+place when it shows something the headline can't: a split across groups, a mix
+of categories, a trend across months, a share that changed. Use `unit: %` and a
+plain title, and keep to percentages, shares, and indices — not currency amounts
+or user counts (see the confidentiality note at the end of this file).
 
-```
-unit: %
-Before: 100%
-After: 126%
-note: Values are indexed to a 100% baseline.
-```
+**Only chart numbers you actually have.** Guessing at a number, or inventing
+extra categories to make a chart look fuller, is not allowed. If a chart is
+waiting on numbers, leave it inside an HTML comment (`<!-- … -->`); comments
+never reach the page.
 
-**If you have a real set of numbers, chart those too.** A split across groups, a
-mix of categories, a trend across months. Those are more interesting than an
-indexed pair, so use them where you have them, with `unit: %` and a plain title.
-Keep percentages and shares, not currency amounts or user counts — see the
-confidentiality note at the end of this file.
-
-**Only chart numbers you actually have.** Restating a result you measured as a
-before/after pair is fine. Guessing at a number, or inventing extra categories
-to make a chart look fuller, is not.
+**Anything in an HTML comment stays private.** Notes to yourself, a chart
+waiting on numbers, a reminder — wrap it in `<!-- -->` and it is stripped before
+rendering.
 
 **An image:** drop the file into `assets/img/`, then:
 
@@ -206,6 +198,78 @@ front, even though the `.md` file itself lives in a subfolder.
 > copied from somewhere you don't trust.
 
 ---
+
+## Numbers: define them once
+
+Every headline number lives in one place, `content/semantic.json`, under
+`metrics`:
+
+```json
+"persona_revenue_uplift": {
+  "value": "+26%",
+  "label": "Revenue increase",
+  "study": "segmentation",
+  "period": "Tested cohorts, 2023"
+}
+```
+
+A node file then *references* it instead of typing the number again:
+
+```
+metric: {{metric:persona_revenue_uplift}}
+metric-label: {{metric:persona_revenue_uplift.label}}
+```
+
+and in the body, `Increased revenue by {{metric:persona_revenue_uplift.bare}}`
+(`.bare` drops the leading `+`, `−`, or `~`). The number can't drift between the
+big figure at the top and the sentence underneath, because there is only one of
+it. The build fails if a metric is defined but never used, or referenced but not
+defined, so the layer stays honest.
+
+## Skills used, and "Applied in"
+
+The same file maps each study to the skills and tools it used:
+
+```json
+"studies": {
+  "segmentation": {
+    "skills": ["customer-segmentation", "product-analytics"],
+    "tools": ["python", "sql", "tableau"]
+  }
+}
+```
+
+Every id is a filename under `skills/`. From that one mapping the site draws the
+**Skills used** chips at the bottom of a study, the **Applied in** list on each
+skill, and the **Read by theme** lenses on the map. You never write those lists by
+hand. A skill with nothing applied in it simply shows nothing, which is the
+honest state. The build fails if a study has no skills or points at a skill that
+doesn't exist.
+
+`lenses` in the same file are the themes on the map (`LTV / CAC`, `Attribution`,
+…): each is a label and a list of studies. Selecting one dims everything that
+isn't in the theme.
+
+## Full case-study pages
+
+A study can have a long-form page at `yoursite.com/projects/<id>/`, opened from
+"Read the full case study" at the bottom of its short panel. Write it in
+`content/details/<id>.md` — the same settings block plus a `summary:` line for
+the share preview — with these sections:
+
+```
+## Context
+## My role          ← what you owned versus the team, who you partnered with
+## Approach         ← method, features, validation, a real chart
+## Decision made    ← what leadership did differently
+## Impact
+## What I'd do differently
+```
+
+The last section is the one that reads as senior; keep it honest. The build
+turns each detail file into a page with its own title, description, and share
+tags, and adds the "Skills used" chips and "Next" link for you. Number the pages
+with `order:`; a `draft: true` line keeps one unpublished.
 
 ## Edit or remove a circle
 
@@ -224,9 +288,15 @@ front, even though the `.md` file itself lives in a subfolder.
 website can't look inside a folder on its own — it can only fetch files it has
 been told about.
 
-**You don't maintain it.** A GitHub Action regenerates it every time you push a
-change to `content/nodes/`, and commits the result. Add a file, commit, done —
-including when you're editing on github.com from your phone.
+**You don't maintain it.** A GitHub Action runs `tools/build-node-list.py` every
+time you push a change under `content/`, and commits the result. Add a file,
+commit, done — including when you're editing on github.com from your phone.
+
+The same script also checks `content/semantic.json` (and fails the push with a
+plain message if a metric or skill reference is wrong), builds the pages under
+`projects/`, refreshes the no-JavaScript summary inside `index.html`, writes
+`content/corpus.md` (what the "Ask about this work" assistant reads; see
+`worker/README.md`), and updates `sitemap.xml`.
 
 If you ever want to update it yourself, run:
 
@@ -263,6 +333,9 @@ The site tells you rather than breaking. A peach-coloured banner at the top
 names the exact file and problem — a file in a folder with no `index.md`, two
 files sharing a name, a colour it doesn't recognise, a leftover `parent:` line.
 Everything else keeps working while you fix it.
+
+A `{{metric:…}}` that shows up on the page as literal text means the metric
+isn't defined in `content/semantic.json`; the build script says which one.
 
 ---
 

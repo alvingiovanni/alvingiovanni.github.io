@@ -7,8 +7,33 @@
  *
  * Raw HTML in a node file passes straight through, which is the escape hatch
  * for embeds. Only ever put markup you wrote yourself into a node file.
+ *
+ * Metrics: `{{metric:id}}` anywhere in a file (settings block or body) is
+ * replaced with the value defined once in content/semantic.json, so a number
+ * can never drift between a hero and its body. `{{metric:id.label}}` gives
+ * the label, `{{metric:id.bare}}` the value without its +/−/~ sign.
  */
 window.Markdown = (function () {
+  /* ---------------- metrics ---------------- */
+
+  var metrics = {};
+  var METRIC_RE = /\{\{\s*metric:([a-z0-9_-]+)(?:\.(value|label|bare|period))?\s*\}\}/gi;
+
+  function setMetrics(map) {
+    metrics = map && typeof map === "object" ? map : {};
+  }
+
+  function substitute(text) {
+    return String(text || "").replace(METRIC_RE, function (whole, id, field) {
+      var m = metrics[id];
+      if (!m) return whole; // left visible on purpose: the build script flags it
+      if (field === "label") return m.label || "";
+      if (field === "period") return m.period || "";
+      if (field === "bare") return String(m.value || "").replace(/^[+\-−~≈]+\s*/, "");
+      return m.value || "";
+    });
+  }
+
   /* ---------------- charts ---------------- */
 
   // ```chart
@@ -239,7 +264,13 @@ window.Markdown = (function () {
   /* ---------------- blocks ---------------- */
 
   function render(md) {
-    var lines = String(md || "").replace(/\r\n?/g, "\n").split("\n");
+    // HTML comments are for notes to the author (a chart waiting on numbers,
+    // a reminder) and never reach the page — stripped before anything else so
+    // a fence inside a comment can't start a block.
+    var lines = String(md || "")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/\r\n?/g, "\n")
+      .split("\n");
     var out = [];
     var para = [];
 
@@ -365,8 +396,18 @@ window.Markdown = (function () {
       body = m[2] || "";
     }
 
-    return { meta: meta, body: body.trim() };
+    Object.keys(meta).forEach(function (key) {
+      meta[key] = substitute(meta[key]);
+    });
+
+    return { meta: meta, body: substitute(body).trim() };
   }
 
-  return { render: render, parse: parse, renderChart: renderChart };
+  return {
+    render: render,
+    parse: parse,
+    renderChart: renderChart,
+    setMetrics: setMetrics,
+    substitute: substitute,
+  };
 })();

@@ -1,0 +1,18 @@
+{
+  "name": "portfolio-ask",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker behind the portfolio's \"Ask about this work\" panel.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "log": "wrangler kv key list --binding ASK_KV --prefix q:"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

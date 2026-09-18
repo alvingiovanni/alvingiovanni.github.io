@@ -2,8 +2,6 @@
 title: Marketing Data Foundation
 order: 1
 tag: Mindvalley · 2024–2026
-metric:
-metric-label:
 ---
 ## Problem
 

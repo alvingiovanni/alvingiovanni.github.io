@@ -1,0 +1,25 @@
+name = "portfolio-ask"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Bind a KV namespace for rate limits and the question log:
+#   npx wrangler kv namespace create ASK_KV
+# then paste the id it prints below.
+[[kv_namespaces]]
+binding = "ASK_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+SITE_URL = "https://alvingiovanni.github.io"
+MODEL = "claude-haiku-4-5"     # or "claude-sonnet-5" for more judgment at ~2× the cost per question
+MAX_TOKENS = "400"
+PER_IP_PER_HOUR = "10"
+PER_DAY = "200"
+CORPUS_TTL_SECONDS = "600"
+LOG_TTL_DAYS = "90"
+
+# Secrets (never in this file):
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put RATE_SALT          # any long random string
+#   npx wrangler secret put TURNSTILE_SECRET   # optional, only if abuse appears

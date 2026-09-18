@@ -1,7 +1,7 @@
 ---
 title: Recognition
 order: 6
-tag: Tokopedia · Awards
+tag: Tokopedia (ByteDance) · 2023–2024
 ---
 My work at Tokopedia received recognition for both **individual performance** and **cross-functional delivery**.
 

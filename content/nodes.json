@@ -19,6 +19,12 @@
     "work/mindvalley/ltv-cac.md",
     "work/mindvalley/lead-scoring.md",
     "work/mindvalley/ai-data-intelligence.md",
+    "work/early-career/index.md",
+    "work/early-career/tatamulia.md",
+    "work/early-career/rpx-fedex.md",
+    "work/education.md",
+    "work/portfolio-agent.md",
+    "work/recommendations.md",
     "skills/index.md",
     "skills/analytics/index.md",
     "skills/analytics/growth-analytics.md",
@@ -70,5 +76,12 @@
     "leisure/reading/fiction.md",
     "leisure/reading/leader.md",
     "leisure/cooking.md"
+  ],
+
+  "details": [
+    "segmentation",
+    "marketing-mix-modeling",
+    "ai-data-intelligence",
+    "ltv-cac"
   ]
 }

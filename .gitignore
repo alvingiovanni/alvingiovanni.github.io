@@ -6,3 +6,6 @@
 *.ipynb
 *.ipnyb
 !assets/resume.pdf
+node_modules/
+.wrangler/
+.dev.vars

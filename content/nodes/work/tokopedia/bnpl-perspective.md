@@ -1,7 +1,7 @@
 ---
 title: What Makes BNPL Succeed
 order: 5
-tag: Perspective · Fintech / BNPL
+tag: Tokopedia (ByteDance) · Perspective
 metric: 5
 metric-label: Factors that decide it
 ---

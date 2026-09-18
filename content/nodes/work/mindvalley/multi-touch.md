@@ -1,9 +1,9 @@
 ---
 title: Multi-Touch Marketing Attribution
 order: 2
-tag: Mindvalley · 2024–Present
-metric: ~20%
-metric-label: Channel revenue increase
+tag: Mindvalley · 2024–2026
+metric: {{metric:mta_channel_revenue_uplift}}
+metric-label: {{metric:mta_channel_revenue_uplift.label}}
 ---
 ## Problem
 
@@ -19,14 +19,4 @@ This provided a more objective view of each channel’s revenue contribution and
 
 ## Impact
 
-- Increased revenue by approximately 20% across channels identified as underinvested
-
-```chart
-type: column
-title: Approximately 20% increase in underinvested-channel revenue
-y-label: Channel revenue index
-unit: %
-Before: 100%
-After: 120%
-note: Values are indexed to a 100% baseline.
-```
+- Increased revenue by approximately {{metric:mta_channel_revenue_uplift.bare}} across channels identified as underinvested

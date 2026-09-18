@@ -2,8 +2,9 @@
 title: Marketing Mix Modeling
 order: 3
 tag: Mindvalley · 2026
-metric: +12%
-metric-label: Marketing efficiency increase
+featured: true
+metric: {{metric:mmm_mer_uplift}}
+metric-label: {{metric:mmm_mer_uplift.label}}
 ---
 ## Problem
 
@@ -19,14 +20,4 @@ The model assessed **incrementality and advertising payback**, giving the busine
 
 ## Impact
 
-- Increased marketing efficiency ratio (MER) by 12%
-
-```chart
-type: column
-title: 12% increase in marketing efficiency ratio
-y-label: Marketing efficiency ratio index
-unit: %
-Before: 100%
-After: 112%
-note: Values are indexed to a 100% baseline.
-```
+- Increased marketing efficiency ratio (MER) by {{metric:mmm_mer_uplift.bare}}

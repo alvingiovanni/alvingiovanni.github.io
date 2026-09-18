@@ -2,8 +2,9 @@
 title: LTV Forecasting & CAC Guardrails
 order: 5
 tag: Mindvalley · 2026
-metric: +11%
-metric-label: 90-day LTV increase
+featured: true
+metric: {{metric:ltv_90day_uplift}}
+metric-label: {{metric:ltv_90day_uplift.label}}
 ---
 ## Problem
 
@@ -21,15 +22,5 @@ Built a reusable price-change framework that projected revenue, LTV, and profita
 
 ## Impact
 
-- Increased 90-day LTV by 11% and sustained the improvement across two consecutive quarters
-- Increased overall profitability by approximately 5%
-
-```chart
-type: column
-title: 11% increase in 90-day LTV
-y-label: 90-day LTV index
-unit: %
-Before: 100%
-After: 111%
-note: Values are indexed to a 100% baseline.
-```
+- Increased 90-day LTV by {{metric:ltv_90day_uplift.bare}} and sustained the improvement across two consecutive quarters
+- Increased overall profitability by approximately {{metric:ltv_profitability_uplift.bare}}

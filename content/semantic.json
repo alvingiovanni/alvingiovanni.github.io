@@ -1,0 +1,172 @@
+{
+  "//": "The semantic layer. Every headline number is defined once here and referenced from node files as {{metric:id}} ({{metric:id.label}} for its label, {{metric:id.bare}} for the value without its +/−/~ sign). `studies` maps each case study to the skill and tool nodes it used; the site renders these as 'Skills used' chips and, on each skill, an 'Applied in' list. `lenses` are ways to read the map by theme. tools/build-node-list.py validates this file on every push.",
+
+  "metrics": {
+    "persona_revenue_uplift": {
+      "value": "+26%",
+      "label": "Revenue increase",
+      "study": "segmentation",
+      "period": "Tested cohorts, 2023"
+    },
+    "persona_activity_share": {
+      "value": "25–85%",
+      "label": "Share of communications and marketing activity that depended on persona",
+      "study": "segmentation",
+      "period": "After rollout, by team"
+    },
+    "affinity_conversion_uplift": {
+      "value": "+20%",
+      "label": "Conversion increase",
+      "study": "channel-affinity",
+      "period": "Campaigns routed by affinity"
+    },
+    "affinity_spend_reduction": {
+      "value": "−12%",
+      "label": "Marketing spend",
+      "study": "channel-affinity",
+      "period": "Campaigns routed by affinity"
+    },
+    "propensity_net_revenue_uplift": {
+      "value": "~5%",
+      "label": "Net revenue increase after promotion costs",
+      "study": "conversion-propensity",
+      "period": "Tiered promo campaigns"
+    },
+    "inflation_vertical_revenue_uplift": {
+      "value": "~30%",
+      "label": "Revenue increase in targeted verticals",
+      "study": "inflation-diagnostic",
+      "period": "Verticals identified by the analysis"
+    },
+    "mta_channel_revenue_uplift": {
+      "value": "~20%",
+      "label": "Revenue increase across underinvested channels",
+      "study": "multi-touch",
+      "period": "Channels re-funded after attribution"
+    },
+    "mmm_mer_uplift": {
+      "value": "+12%",
+      "label": "Marketing efficiency ratio increase",
+      "study": "marketing-mix-modeling",
+      "period": "After budget reallocation"
+    },
+    "funnel_efficiency_uplift": {
+      "value": "+22%",
+      "label": "Funnel efficiency increase",
+      "study": "funnel-optimization",
+      "period": "Acquisition funnel"
+    },
+    "funnel_revenue_uplift": {
+      "value": "+8%",
+      "label": "Funnel revenue increase",
+      "study": "funnel-optimization",
+      "period": "Acquisition funnel"
+    },
+    "ltv_90day_uplift": {
+      "value": "+11%",
+      "label": "90-day LTV increase",
+      "study": "ltv-cac",
+      "period": "Sustained across two consecutive quarters"
+    },
+    "ltv_profitability_uplift": {
+      "value": "~5%",
+      "label": "Overall profitability increase",
+      "study": "ltv-cac",
+      "period": "Following the pricing and CAC changes"
+    },
+    "lead_ad_conversion_uplift": {
+      "value": "+190%",
+      "label": "Advertising conversion increase",
+      "study": "lead-scoring",
+      "period": "Tiered communication"
+    },
+    "lead_lifecycle_conversion_uplift": {
+      "value": "+14%",
+      "label": "Lifecycle conversion increase",
+      "study": "lead-scoring",
+      "period": "Tiered communication"
+    },
+    "lead_sales_email_uplift": {
+      "value": "+26%",
+      "label": "Sales email conversion increase",
+      "study": "lead-scoring",
+      "period": "Tiered communication"
+    },
+    "ai_time_to_insight": {
+      "value": "Under 1 hr",
+      "label": "Time to insight, down from 1–2 days",
+      "study": "ai-data-intelligence",
+      "period": "Recurring leadership questions"
+    },
+    "ai_self_serve_share": {
+      "value": "~80%",
+      "label": "Recurring leadership questions answerable without an analyst",
+      "study": "ai-data-intelligence",
+      "period": "After launch"
+    }
+  },
+
+  "studies": {
+    "segmentation": {
+      "skills": ["customer-segmentation", "product-analytics", "project-leadership", "cross-functional-collaboration"],
+      "tools": ["python", "sql", "tableau"]
+    },
+    "channel-affinity": {
+      "skills": ["customer-segmentation", "growth-analytics", "marketing-analytics", "experimentation"],
+      "tools": ["sql", "python"]
+    },
+    "conversion-propensity": {
+      "skills": ["growth-analytics", "experimentation", "problem-solving"],
+      "tools": ["python", "sql"]
+    },
+    "inflation-diagnostic": {
+      "skills": ["problem-framing", "strategic-communication", "revenue-attribution", "marketing-mix-model"],
+      "tools": ["sql", "tableau"]
+    },
+    "bnpl-perspective": {
+      "skills": ["problem-framing", "strategic-communication", "executive-stakeholder-management"],
+      "tools": []
+    },
+    "marketing-data-foundation": {
+      "skills": ["data-strategy", "project-leadership", "revenue-attribution"],
+      "tools": ["dbt", "airflow", "gcp", "sql", "looker-studio"]
+    },
+    "multi-touch": {
+      "skills": ["revenue-attribution", "marketing-analytics", "cross-functional-collaboration"],
+      "tools": ["sql", "python", "looker-studio"]
+    },
+    "marketing-mix-modeling": {
+      "skills": ["marketing-mix-model", "revenue-attribution", "marketing-analytics", "ltv-cac-modelling", "executive-stakeholder-management"],
+      "tools": ["python", "sql"]
+    },
+    "funnel-optimization": {
+      "skills": ["growth-analytics", "product-analytics", "experimentation"],
+      "tools": ["sql", "python"]
+    },
+    "ltv-cac": {
+      "skills": ["ltv-cac-modelling", "product-analytics", "data-strategy"],
+      "tools": ["sql", "dbt", "python"]
+    },
+    "lead-scoring": {
+      "skills": ["customer-segmentation", "growth-analytics", "problem-solving"],
+      "tools": ["python", "sql"]
+    },
+    "ai-data-intelligence": {
+      "skills": ["agentic-ai", "llm-integration", "data-strategy"],
+      "tools": ["python", "gcp", "airflow", "metabase"]
+    },
+    "portfolio-agent": {
+      "skills": ["agentic-ai", "llm-integration", "data-strategy"],
+      "tools": ["python"]
+    }
+  },
+
+  "lenses": [
+    { "id": "ltv-cac", "label": "LTV / CAC", "studies": ["ltv-cac", "marketing-mix-modeling", "funnel-optimization"] },
+    { "id": "attribution", "label": "Attribution", "studies": ["multi-touch", "marketing-mix-modeling", "marketing-data-foundation", "inflation-diagnostic"] },
+    { "id": "segmentation", "label": "Segmentation & scoring", "studies": ["segmentation", "channel-affinity", "lead-scoring", "conversion-propensity"] },
+    { "id": "experimentation", "label": "Experimentation", "studies": ["funnel-optimization", "conversion-propensity", "channel-affinity"] },
+    { "id": "ai", "label": "AI", "studies": ["ai-data-intelligence", "portfolio-agent"] },
+    { "id": "fintech", "label": "Fintech", "studies": ["segmentation", "channel-affinity", "conversion-propensity", "inflation-diagnostic", "bnpl-perspective"] }
+  ]
+}

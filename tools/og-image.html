@@ -1,0 +1,93 @@
+<!doctype html>
+<!--
+  Source of assets/og-image.png (1200×630). Regenerate with:
+      node tools/build-og-image.js
+  Edit this file, not the PNG.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; }
+    body {
+      width: 1200px; height: 630px; overflow: hidden; position: relative;
+      background: #f7f7f5; color: #1d1d1f;
+      font-family: "Space Grotesk", -apple-system, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .map { position: absolute; inset: 0; }
+    .text { position: absolute; left: 96px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+    .name { font-size: 76px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin: 0; }
+    .name span { color: #3867d6; }
+    .role { margin: 22px 0 0; font-size: 30px; font-weight: 500; letter-spacing: -0.01em; color: #3867d6; }
+    .rule { width: 52px; height: 4px; border-radius: 2px; background: #3867d6; margin: 30px 0 26px; }
+    .themes { margin: 0; font-size: 22px; font-weight: 500; color: #68686f; letter-spacing: -0.005em; line-height: 1.45; max-width: 560px; }
+    .url { position: absolute; left: 96px; bottom: 56px; margin: 0; font-size: 22px; color: #929298; }
+    .fade { position: absolute; top: 0; bottom: 0; left: 560px; width: 260px; background: linear-gradient(90deg, #f7f7f5 0%, rgba(247,247,245,0.55) 55%, rgba(247,247,245,0) 100%); }
+  </style>
+</head>
+<body>
+  <svg class="map" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#3867d6" stop-opacity="0.13"/>
+        <stop offset="100%" stop-color="#3867d6" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <g transform="translate(905 315)">
+      <circle r="250" fill="url(#glow)"/>
+      <g fill="none" stroke="#606068" stroke-width="1">
+        <circle r="95" stroke-opacity="0.11"/><circle r="185" stroke-opacity="0.09"/><circle r="275" stroke-opacity="0.07"/>
+      </g>
+      <!-- spokes -->
+      <g stroke-width="1.6" stroke-opacity="0.28">
+        <line x1="0" y1="0" x2="0" y2="-168" stroke="#3867d6"/>
+        <line x1="0" y1="0" x2="160" y2="-52" stroke="#7655c5"/>
+        <line x1="0" y1="0" x2="98" y2="136" stroke="#bd7623"/>
+        <line x1="0" y1="0" x2="-98" y2="136" stroke="#27866e"/>
+        <line x1="0" y1="0" x2="-160" y2="-52" stroke="#c65370"/>
+      </g>
+      <!-- leaves -->
+      <g stroke-width="1" stroke-opacity="0.2">
+        <line x1="0" y1="-168" x2="-76" y2="-262" stroke="#3867d6"/><line x1="0" y1="-168" x2="6" y2="-282" stroke="#3867d6"/><line x1="0" y1="-168" x2="84" y2="-256" stroke="#3867d6"/><line x1="0" y1="-168" x2="-120" y2="-214" stroke="#3867d6"/>
+        <line x1="160" y1="-52" x2="262" y2="-118" stroke="#7655c5"/><line x1="160" y1="-52" x2="284" y2="-46" stroke="#7655c5"/><line x1="160" y1="-52" x2="266" y2="26" stroke="#7655c5"/>
+        <line x1="98" y1="136" x2="176" y2="220" stroke="#bd7623"/><line x1="98" y1="136" x2="86" y2="252" stroke="#bd7623"/>
+        <line x1="-98" y1="136" x2="-176" y2="220" stroke="#27866e"/><line x1="-98" y1="136" x2="-86" y2="252" stroke="#27866e"/>
+        <line x1="-160" y1="-52" x2="-268" y2="-112" stroke="#c65370"/><line x1="-160" y1="-52" x2="-276" y2="-4" stroke="#c65370"/>
+      </g>
+      <g fill-opacity="0.55">
+        <circle cx="-76" cy="-262" r="6" fill="#3867d6"/><circle cx="6" cy="-282" r="6" fill="#3867d6"/><circle cx="84" cy="-256" r="6" fill="#3867d6"/><circle cx="-120" cy="-214" r="6" fill="#3867d6"/>
+        <circle cx="262" cy="-118" r="6" fill="#7655c5"/><circle cx="284" cy="-46" r="6" fill="#7655c5"/><circle cx="266" cy="26" r="6" fill="#7655c5"/>
+        <circle cx="176" cy="220" r="6" fill="#bd7623"/><circle cx="86" cy="252" r="6" fill="#bd7623"/>
+        <circle cx="-176" cy="220" r="6" fill="#27866e"/><circle cx="-86" cy="252" r="6" fill="#27866e"/>
+        <circle cx="-268" cy="-112" r="6" fill="#c65370"/><circle cx="-276" cy="-4" r="6" fill="#c65370"/>
+      </g>
+      <!-- featured: double ring -->
+      <g fill="#fff" stroke-width="2">
+        <circle cx="84" cy="-256" r="13" stroke="#3867d6"/><circle cx="84" cy="-256" r="18" fill="none" stroke="#3867d6" stroke-opacity="0.5" stroke-width="1.2"/>
+        <circle cx="-120" cy="-214" r="13" stroke="#3867d6"/><circle cx="-120" cy="-214" r="18" fill="none" stroke="#3867d6" stroke-opacity="0.5" stroke-width="1.2"/>
+      </g>
+      <!-- branches -->
+      <g fill="#fff" stroke-width="2.2">
+        <circle cx="0" cy="-168" r="26" stroke="#3867d6"/>
+        <circle cx="160" cy="-52" r="26" stroke="#7655c5"/>
+        <circle cx="98" cy="136" r="26" stroke="#bd7623"/>
+        <circle cx="-98" cy="136" r="26" stroke="#27866e"/>
+        <circle cx="-160" cy="-52" r="26" stroke="#c65370"/>
+      </g>
+      <circle r="52" fill="#fff" stroke="#1d1d1f" stroke-width="2.6"/>
+      <g stroke="#1d1d1f" stroke-width="2.4" stroke-linecap="round"><line x1="-9" y1="0" x2="9" y2="0"/><line x1="0" y1="-9" x2="0" y2="9"/></g>
+    </g>
+  </svg>
+  <div class="fade"></div>
+  <div class="text">
+    <h1 class="name">Alvin Giovanni<span>.</span></h1>
+    <p class="role">Senior Growth &amp; Product Analytics</p>
+    <div class="rule"></div>
+    <p class="themes">Attribution · LTV / CAC · Segmentation<br/>AI-enabled self-serve analytics<br/>Fintech and consumer technology</p>
+  </div>
+  <p class="url">alvingiovanni.github.io</p>
+</body>
+</html>

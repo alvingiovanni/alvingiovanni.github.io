@@ -1,9 +1,9 @@
 ---
 title: Conversion Propensity Model
 order: 4
-tag: Tokopedia (Bytedance) · 2021–2024
-metric: ~17%
-metric-label: Daily transacting users
+tag: Tokopedia (ByteDance) · 2021–2024
+metric: {{metric:propensity_net_revenue_uplift}}
+metric-label: {{metric:propensity_net_revenue_uplift.label}}
 ---
 ## Problem
 
@@ -21,14 +21,4 @@ The resulting tiers were deployed directly into CRM platforms, allowing campaign
 
 ## Impact
 
-- Increased net revenue after promotion costs by approximately 5%
-
-```chart
-type: column
-title: Approximately 5% increase in net revenue after promotion costs
-y-label: Net revenue index
-unit: %
-Before: 100%
-After: 105%
-note: Values are indexed to a 100% baseline.
-```
+- Increased net revenue after promotion costs by approximately {{metric:propensity_net_revenue_uplift.bare}}

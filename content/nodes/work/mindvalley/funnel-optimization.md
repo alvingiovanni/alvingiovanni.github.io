@@ -2,8 +2,8 @@
 title: Funnel Optimization
 order: 4
 tag: Mindvalley · 2026
-metric: +22%
-metric-label: Funnel efficiency increase
+metric: {{metric:funnel_efficiency_uplift}}
+metric-label: {{metric:funnel_efficiency_uplift.label}}
 ---
 ## Problem
 
@@ -23,25 +23,5 @@ The broader analysis also modeled upsell economics and independently validated p
 
 ## Impact
 
-- Increased funnel efficiency by 22%
-- Increased funnel revenue by 8%
-
-```chart
-type: column
-title: 22% increase in funnel efficiency
-y-label: Funnel efficiency index
-unit: %
-Before: 100%
-After: 122%
-note: Values are indexed to a 100% baseline.
-```
-
-```chart
-type: column
-title: 8% increase in funnel revenue
-y-label: Funnel revenue index
-unit: %
-Before: 100%
-After: 108%
-note: Values are indexed to a 100% baseline.
-```
+- Increased funnel efficiency by {{metric:funnel_efficiency_uplift.bare}}
+- Increased funnel revenue by {{metric:funnel_revenue_uplift.bare}}

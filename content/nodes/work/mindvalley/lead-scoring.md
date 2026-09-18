@@ -1,9 +1,9 @@
 ---
 title: Lead Scoring Model
 order: 6
-tag: Mindvalley · 2024–Present
-metric: +190%
-metric-label: Advertising conversion increase
+tag: Mindvalley · 2024–2026
+metric: {{metric:lead_ad_conversion_uplift}}
+metric-label: {{metric:lead_ad_conversion_uplift.label}}
 ---
 ## Problem
 
@@ -19,36 +19,6 @@ The model assigned every lead a score and grouped them into **communication tier
 
 ## Impact
 
-- Increased advertising conversion rate by 190%
-- Increased lifecycle conversion by 14%
-- Increased sales email conversion by 26%
-
-```chart
-type: column
-title: 190% increase in advertising conversion rate
-y-label: Advertising conversion rate index
-unit: %
-Before: 100%
-After: 290%
-note: Values are indexed to a 100% baseline.
-```
-
-```chart
-type: column
-title: 14% increase in lifecycle conversion rate
-y-label: Lifecycle conversion rate index
-unit: %
-Before: 100%
-After: 114%
-note: Values are indexed to a 100% baseline.
-```
-
-```chart
-type: column
-title: 26% increase in sales email conversion rate
-y-label: Sales email conversion rate index
-unit: %
-Before: 100%
-After: 126%
-note: Values are indexed to a 100% baseline.
-```
+- Increased advertising conversion rate by {{metric:lead_ad_conversion_uplift.bare}}
+- Increased lifecycle conversion by {{metric:lead_lifecycle_conversion_uplift.bare}}
+- Increased sales email conversion by {{metric:lead_sales_email_uplift.bare}}

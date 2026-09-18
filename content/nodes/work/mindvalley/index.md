@@ -3,9 +3,9 @@ title: Mindvalley
 order: 2
 color: blue
 ---
-At  **Mindvalley**, I stepped into a broader strategic role as  **Growth Strategy & Analytics Lead**, partnering directly with C-suite executives and senior leaders across marketing, product, and data.
+At **Mindvalley**, I stepped into a broader strategic role as **Senior Growth Analyst**, partnering directly with C-suite executives and senior leaders across marketing, product, and data.
 
-My role focuses on turning complex performance data into clear business decisions and helping leadership understand **where growth is coming from, where to invest, and how to improve marketing efficiency and profitability** .
+My role focuses on turning complex performance data into clear business decisions and helping leadership understand **where growth is coming from, where to invest, and how to improve marketing efficiency and profitability**.
 
 A major part of my work has been strengthening the company’s analytics foundation. I designed a **company-wide measurement framework** to standardize KPIs and improve consistency in decision-making, while also working closely with Data Engineering and BI teams to improve data modeling and reporting reliability.
 

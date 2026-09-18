@@ -1,9 +1,10 @@
 ---
 title: User Persona
 order: 3
-tag: Tokopedia (Bytedance) · 2021–2024
-metric: +26%
-metric-label: Revenue increase
+tag: Tokopedia (ByteDance) · 2021–2024
+featured: true
+metric: {{metric:persona_revenue_uplift}}
+metric-label: {{metric:persona_revenue_uplift.label}}
 ---
 ## Problem
 
@@ -26,15 +27,5 @@ These personas became the foundation for a **personalization framework across Pr
 
 ## Impact
 
-- Increased revenue by 26%
-- Between 25% and 85% of communications and marketing activity depended on persona
-
-```chart
-type: column
-title: 26% increase in revenue
-y-label: Revenue index
-unit: %
-Before: 100%
-After: 126%
-note: Values are indexed to a 100% baseline.
-```
+- Increased revenue by {{metric:persona_revenue_uplift.bare}}
+- {{metric:persona_activity_share}} of communications and marketing activity, depending on the team, became persona-driven

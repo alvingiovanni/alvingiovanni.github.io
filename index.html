@@ -3,24 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-  <title>Alvin Giovanni — Growth &amp; Product Analytics</title>
-  <meta name="description" content="Alvin Giovanni — Growth &amp; Product Analytics leader. An explorable map of case studies in segmentation, propensity scoring, channel affinity, and LTV/CAC modelling across fintech, e-commerce, and edtech." />
+  <title>Alvin Giovanni — Senior Growth &amp; Product Analytics</title>
+  <meta name="description" content="Alvin Giovanni, Senior Growth &amp; Product Analytics. An explorable map of case studies in attribution, LTV/CAC, segmentation, and AI-enabled self-serve analytics across fintech and consumer technology." />
   <meta name="theme-color" content="#fafafa" />
-  <meta property="og:title" content="Alvin Giovanni — Growth &amp; Product Analytics" />
-  <meta property="og:description" content="An explorable map of five years of growth and product analytics work across fintech, e-commerce, and edtech." />
+  <meta property="og:title" content="Alvin Giovanni — Senior Growth &amp; Product Analytics" />
+  <meta property="og:description" content="An explorable map of five years of growth and product analytics work: attribution, LTV/CAC, segmentation, and AI-enabled self-serve analytics across fintech and consumer technology." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://alvingiovanni.github.io/" />
-  <meta property="og:image" content="https://alvingiovanni.github.io/assets/og-image.svg" />
+  <meta property="og:image" content="https://alvingiovanni.github.io/assets/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Alvin Giovanni, Senior Growth &amp; Product Analytics, with a fragment of the site's map" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://alvingiovanni.github.io/assets/og-image.svg" />
+  <meta name="twitter:image" content="https://alvingiovanni.github.io/assets/og-image.png" />
   <link rel="canonical" href="https://alvingiovanni.github.io/" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%233867d6' stroke-width='2' fill='none'%3E%3Cpath d='M16 16 L16 6 M16 16 L26 21 M16 16 L6 21'/%3E%3C/g%3E%3Cg fill='%233867d6'%3E%3Ccircle cx='16' cy='6' r='3.5'/%3E%3Ccircle cx='26' cy='21' r='3.5'/%3E%3Ccircle cx='6' cy='21' r='3.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23fff' stroke='%231d1d1f' stroke-width='2.5'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=20260817-skill-hierarchy" />
+  <link rel="stylesheet" href="css/style.css?v=20260918-showcase" />
+  <script>
+    // Site configuration. `agentEndpoint` is the URL of the Cloudflare Worker
+    // in worker/ (e.g. "https://ask.alvingiovanni.workers.dev"). Leave it
+    // empty and the "Ask about this work" button stays hidden.
+    window.PORTFOLIO_CONFIG = {
+      agentEndpoint: ""
+    };
+  </script>
 </head>
 <body>
 
@@ -33,15 +42,22 @@
         <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 5.5h16M4 12h16M4 18.5h10" />
         </svg>
-        <span>All Work</span>
+        <span>Read as a page</span>
       </button>
-      <a class="btn btn-primary" href="assets/resume.pdf" target="_blank" rel="noopener">
+      <a class="btn btn-surface" href="assets/resume.pdf" target="_blank" rel="noopener">
         <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M7 3.5h7l4 4V20.5H7z" />
           <path d="M14 3.5v4h4M10 12h5M10 15.5h5" />
         </svg>
         <span>Resume</span>
       </a>
+      <button id="ask-toggle" type="button" class="btn btn-surface" aria-expanded="false" aria-controls="ask-panel" hidden>
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4.5 6.5A2.5 2.5 0 0 1 7 4h10a2.5 2.5 0 0 1 2.5 2.5v7A2.5 2.5 0 0 1 17 16h-5.5L7.5 19.5V16H7a2.5 2.5 0 0 1-2.5-2.5z" />
+          <path d="M9 9.5h6M9 12.5h4" />
+        </svg>
+        <span>Ask about this work</span>
+      </button>
       <div class="search-wrap" data-expanded="false">
         <button id="search-toggle" class="search-toggle" type="button" aria-label="Search portfolio" aria-expanded="false" aria-controls="search">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -72,6 +88,9 @@
     </a>
   </header>
 
+  <!-- Lenses: read the map by theme. Filled from content/semantic.json. -->
+  <div class="lens" id="lens" hidden></div>
+
   <div class="controls" role="group" aria-label="Canvas controls">
     <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
     <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
@@ -95,6 +114,29 @@
     </article>
   </div>
 
+  <!-- "Ask about this work": a grounded research assistant over the portfolio. -->
+  <aside class="ask-panel" id="ask-panel" data-open="false" role="dialog" aria-labelledby="ask-title" hidden>
+    <div class="ask-head">
+      <div>
+        <p class="eyebrow">Ask about this work</p>
+        <h2 id="ask-title">A research assistant over this portfolio</h2>
+        <p class="ask-intro">Answers come only from what is written here, with links to the relevant nodes. Questions are logged so the content can improve; nothing else is.</p>
+      </div>
+      <button class="modal-close" id="ask-close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="ask-log" id="ask-log" aria-live="polite">
+      <div class="ask-suggest">
+        <button type="button" data-question="How was incrementality separated from correlation in the funnel work?">How was incrementality separated from correlation in the funnel work?</button>
+        <button type="button" data-question="Which projects used clustering?">Which projects used clustering?</button>
+        <button type="button" data-question="What did the LTV framework change about pricing decisions?">What did the LTV framework change about pricing decisions?</button>
+      </div>
+    </div>
+    <form class="ask-form" id="ask-form">
+      <input id="ask-input" type="text" placeholder="Ask about a method, a decision, a result…" aria-label="Your question" autocomplete="off" maxlength="400" required />
+      <button type="submit" class="ask-send" aria-label="Send">→</button>
+    </form>
+  </aside>
+
   <!-- Linear reading view: the whole site as one document. -->
   <div class="text-view" id="text-view" data-open="false" role="dialog" aria-modal="true" aria-labelledby="text-view-title" hidden>
     <div class="text-view-inner">
@@ -104,6 +146,13 @@
         <p class="eyebrow">Portfolio index</p>
         <h1 id="text-view-title">Alvin Giovanni</h1>
         <p class="text-view-subtitle" id="text-view-subtitle"></p>
+        <button type="button" class="btn btn-surface see-map" id="see-map">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" /><circle cx="12" cy="4" r="2" /><circle cx="19" cy="16.5" r="2" /><circle cx="5" cy="16.5" r="2" />
+            <path d="M12 9V6M13.8 13.8l3.5 1.8M10.2 13.8l-3.5 1.8" />
+          </svg>
+          <span>See the map</span>
+        </button>
         <nav class="index-mobile-nav index-navigation" id="index-mobile-nav" aria-label="Portfolio index sections"></nav>
         <div id="text-view-body"></div>
       </main>
@@ -112,21 +161,42 @@
 
   <noscript>
     <div class="noscript">
+      <!-- static-summary:start — generated by tools/build-node-list.py; edits here are overwritten -->
       <h1>Alvin Giovanni</h1>
-      <p><strong>Growth &amp; Product Analytics</strong></p>
-      <p>I turn messy behavioral data into growth decisions people actually act on. 5+ years
-      partnering with executives across fintech, e-commerce, and edtech — building segmentation
-      models, propensity scores, and attribution frameworks that move real business metrics,
-      not just dashboards.</p>
-      <p>This site is an interactive map and needs JavaScript. In the meantime:
-      <a href="assets/resume.pdf">my resume (PDF)</a> ·
-      <a href="https://www.linkedin.com/in/alvingiovanni/">LinkedIn</a> ·
-      <a href="mailto:alvingiovanni@outlook.com">alvingiovanni@outlook.com</a></p>
+      <p><strong>Senior Growth &amp; Product Analytics</strong></p>
+      <p>I work on the measurement that sits underneath growth decisions: which channels are actually incremental, what a customer is worth over time and what that means for how much to spend acquiring one, who the product is really for, and how to make performance data usable by a business team without waiting on an analyst. Most of my work is <strong>attribution, LTV and CAC, segmentation, and AI-enabled self-serve analytics</strong>.</p>
+<p>I lead cross-functional analytics programmes and work directly with C-suite and senior leaders in marketing, product, and finance. The problems usually arrive ambiguous. A good part of the job is finding the real question, agreeing what a right answer would look like, and then building the measurement so the answer holds up when it is challenged.</p>
+<p>I have done this work in <strong>fintech</strong>, at Tokopedia (ByteDance) on Buy-Now-Pay-Later and merchant lending, and in <strong>consumer technology</strong>, at Mindvalley. Before that I trained as a civil engineer, which is where the habit of checking the foundation before building on it comes from.</p>
+<p>Jakarta, Indonesia · <a href="mailto:alvingiovanni@outlook.com">alvingiovanni@outlook.com</a> · <a href="https://www.linkedin.com/in/alvingiovanni/">LinkedIn</a> · <a href="assets/resume.pdf">Résumé</a></p>
+      <p>This site is an interactive map and needs JavaScript. The featured work reads fine without it:</p>
+      <h2>Selected work</h2>
+      <h3><a href="/projects/segmentation/">User Persona</a></h3>
+      <p class="noscript-meta">Tokopedia (ByteDance) · 2021–2024 · +26% Revenue increase</p>
+      <p>How a five-persona behavioural segmentation of Buy-Now-Pay-Later users, built on purchase need state and frequency, became the personalisation framework shared by Product, Marketing, and Business.</p>
+      <h3><a href="/projects/marketing-mix-modeling/">Marketing Mix Modeling</a></h3>
+      <p class="noscript-meta">Mindvalley · 2026 · +12% Marketing efficiency ratio increase</p>
+      <p>Building a media mix model that measured incrementality and advertising payback when direct attribution stopped being trustworthy, and using it to move budget.</p>
+      <h3><a href="/projects/ai-data-intelligence/">AI Data Intelligence</a></h3>
+      <p class="noscript-meta">Mindvalley · 2024–2026 · Under 1 hr Time to insight, down from 1–2 days</p>
+      <p>A self-serve analytical layer with generated insights and a conversational agent, built so that recurring leadership questions no longer needed an analyst in the loop.</p>
+      <h3><a href="/projects/ltv-cac/">LTV Forecasting &amp; CAC Guardrails</a></h3>
+      <p class="noscript-meta">Mindvalley · 2026 · +11% 90-day LTV increase</p>
+      <p>One lifetime-value definition, automated across business units, extended into CAC guardrails, payback thresholds, and a price-change framework that accounts for how conversion moves with price.</p>
+      <p><a href="/assets/resume.pdf">Résumé (PDF)</a> · <a href="https://www.linkedin.com/in/alvingiovanni/">LinkedIn</a> · <a href="mailto:alvingiovanni@outlook.com">alvingiovanni@outlook.com</a></p>
+      <!-- static-summary:end -->
     </div>
   </noscript>
 
-  <script src="js/markdown.js?v=20260816-index-subtitle"></script>
-  <script src="js/graph.js?v=20260816-index-subtitle"></script>
-  <script src="js/app.js?v=20260817-skill-hierarchy"></script>
+  <!-- Cookieless analytics (GoatCounter). To switch on: create a site at
+       goatcounter.com, replace YOURCODE below, and remove the comment markers.
+       js/app.js then records which studies get read, which lenses are used,
+       reading view vs map, and agent usage, as events. -->
+  <!--
+  <script data-goatcounter="https://YOURCODE.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  -->
+
+  <script src="js/markdown.js?v=20260918-showcase"></script>
+  <script src="js/graph.js?v=20260918-showcase"></script>
+  <script src="js/app.js?v=20260918-showcase"></script>
 </body>
 </html>

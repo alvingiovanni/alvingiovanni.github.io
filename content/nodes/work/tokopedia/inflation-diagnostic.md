@@ -2,8 +2,8 @@
 title: Inflation & Market Diagnostic
 order: 1
 tag: Tokopedia (ByteDance) · 2021–2024
-metric: ~30%
-metric-label: Revenue increase in targeted verticals
+metric: {{metric:inflation_vertical_revenue_uplift}}
+metric-label: {{metric:inflation_vertical_revenue_uplift.label}}
 ---
 ## Problem
 
@@ -19,15 +19,5 @@ Analyzed seller transaction volume by category to identify where demand remained
 
 ## Impact
 
-- Increased revenue by approximately 30% in targeted verticals identified by the analysis
+- Increased revenue by approximately {{metric:inflation_vertical_revenue_uplift.bare}} in targeted verticals identified by the analysis
 - Lending and growth efforts shifted toward seller segments that remained resilient to inflation
-
-```chart
-type: column
-title: Approximately 30% increase in targeted-vertical revenue
-y-label: Targeted-vertical revenue index
-unit: %
-Before: 100%
-After: 130%
-note: Values are indexed to a 100% baseline.
-```

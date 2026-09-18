@@ -1,9 +1,10 @@
 ---
 title: AI Data Intelligence
 order: 7
-tag: Mindvalley · 2024–Present
-metric: Under 1 hr
-metric-label: Time to insight
+tag: Mindvalley · 2024–2026
+featured: true
+metric: {{metric:ai_time_to_insight}}
+metric-label: {{metric:ai_time_to_insight.label}}
 ---
 ## Problem
 
@@ -19,5 +20,5 @@ The platform also included an **AI agent chatbot** that users could query with b
 
 ## Impact
 
-- Reduced time to insight from between 1 and 2 days to under 1 hour
-- Made roughly 80% of leadership’s recurring questions answerable without analyst support
+- Time to insight: {{metric:ai_time_to_insight.bare}}, down from between 1 and 2 days
+- Made roughly {{metric:ai_self_serve_share.bare}} of leadership’s recurring questions answerable without analyst support
